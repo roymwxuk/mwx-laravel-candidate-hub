@@ -1,0 +1,55 @@
+# One-command demo: docker compose up --build  →  http://localhost:8000
+x-app-env: &app-env
+  APP_ENV: local
+  # Demo-only key. Never reuse it anywhere real.
+  APP_KEY: base64:Q2FuZGlkYXRlSHViRGVtb0tleU9ubHkxMjM0NTY3ODk=
+  DB_CONNECTION: sqlite
+  DB_DATABASE: /data/database.sqlite
+  QUEUE_CONNECTION: database
+  EXTRACTOR_URL: http://extractor:8001
+  EXTRACTOR_TOKEN: ${EXTRACTOR_TOKEN:-local-dev-token}
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment: *app-env
+    volumes:
+      - db:/data
+      - files:/app/storage/app
+    depends_on:
+      extractor:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1:8000/up') === false ? 1 : 0);"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  queue:
+    build: .
+    command: ["php", "artisan", "queue:work", "--tries=3", "--backoff=10"]
+    environment:
+      <<: *app-env
+      RUN_SETUP: "false"
+    volumes:
+      - db:/data
+      - files:/app/storage/app
+    depends_on:
+      app:
+        condition: service_healthy
+
+  extractor:
+    build: ./extractor
+    ports:
+      - "8001:8001"
+    environment:
+      EXTRACTOR_TOKEN: ${EXTRACTOR_TOKEN:-local-dev-token}
+      EXTRACTOR_PROVIDER: ${EXTRACTOR_PROVIDER:-mock}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-5-5}
+
+volumes:
+  db:
+  files:
