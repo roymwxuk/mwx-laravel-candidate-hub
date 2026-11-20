@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Stage;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -63,8 +64,8 @@ class AuditLog extends Model
             'candidate.created_from_resume' => '履歴書から候補者を登録しました',
             'stage.changed' => sprintf(
                 '選考ステージを「%s」から「%s」に変更しました',
-                \App\Enums\Stage::tryFrom($p['from'] ?? '')?->label() ?? '?',
-                \App\Enums\Stage::tryFrom($p['to'] ?? '')?->label() ?? '?',
+                Stage::tryFrom($p['from'] ?? '')?->label() ?? '?',
+                Stage::tryFrom($p['to'] ?? '')?->label() ?? '?',
             ),
             'interviewer.assigned' => sprintf('面接官「%s」をアサインしました', $p['interviewer_name'] ?? '?'),
             'interviewer.removed' => sprintf('面接官「%s」のアサインを解除しました', $p['interviewer_name'] ?? '?'),
