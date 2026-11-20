@@ -38,3 +38,119 @@ if (addHistory) {
         container.appendChild(clone);
     });
 }
+
+// Candidate-pool histograms. Chart.js is loaded only on pages that have one.
+const histograms = document.querySelectorAll('canvas[data-histogram]');
+
+// The skill picker counts too: the first skill's chart may be withheld
+// (sample too small) while others can still be drawn.
+if (histograms.length > 0 || document.querySelector('[data-skill-select]')) {
+    const { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } = await import('chart.js');
+    Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
+
+    const ink = { primary: '#0f172a', secondary: '#475569', grid: '#e2e8f0' };
+    const series = '#2a78d6';
+
+    // Count at the tip of each bar (zero-height bars stay unlabelled).
+    const valueLabels = {
+        id: 'valueLabels',
+        afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            ctx.save();
+            ctx.fillStyle = ink.secondary;
+            ctx.font = '12px ui-sans-serif, system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            chart.getDatasetMeta(0).data.forEach((bar, i) => {
+                const value = chart.data.datasets[0].data[i];
+                if (value > 0) ctx.fillText(`${value}名`, bar.x, bar.y - 4);
+            });
+            ctx.restore();
+        },
+    };
+
+    // Charts in hidden panels are drawn the first time they are shown,
+    // since a canvas inside a hidden element has no size to draw at.
+    const drawHistogram = (canvas) => {
+        if (canvas.dataset.drawn || canvas.closest('[hidden]')) return;
+        canvas.dataset.drawn = 'true';
+
+        const { labels, counts, axisLabel } = JSON.parse(canvas.dataset.histogram);
+
+        new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: series,
+                    hoverBackgroundColor: '#1f63b8',
+                    borderRadius: { topLeft: 4, topRight: 4 },
+                    borderSkipped: 'start',
+                    maxBarThickness: 24,
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: { padding: { top: 20 } },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        displayColors: false,
+                        callbacks: {
+                            title: (items) => `${axisLabel}: ${items[0].label}`,
+                            label: (item) => `${item.raw}名`,
+                        },
+                    },
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: ink.secondary } },
+                    y: {
+                        beginAtZero: true,
+                        border: { display: false },
+                        grid: { color: ink.grid },
+                        ticks: { color: ink.secondary, precision: 0 },
+                        title: { display: true, text: '人数', color: ink.secondary },
+                    },
+                },
+            },
+            plugins: [valueLabels],
+        });
+    };
+
+    histograms.forEach(drawHistogram);
+
+    // Skill picker: swap to that skill's panel in place, leaving the other
+    // charts alone, and keep ?skill= in the URL so a reload shows the same one.
+    document.querySelectorAll('[data-skill-select]').forEach((select) => {
+        select.addEventListener('change', () => {
+            const panels = select.closest('[data-skill-panels]');
+            const target = [...panels.querySelectorAll('[data-skill-panel]')]
+                .find((panel) => panel.dataset.skillPanel === select.value);
+            if (!target) return;
+
+            panels.querySelectorAll('[data-skill-panel]').forEach((panel) => {
+                panel.hidden = panel !== target;
+            });
+            target.querySelectorAll('canvas[data-histogram]').forEach(drawHistogram);
+
+            // Each panel has its own picker; keep keyboard focus on the visible one.
+            target.querySelector('[data-skill-select]')?.focus();
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('skill', select.value);
+            window.history.replaceState(null, '', url);
+        });
+    });
+}
+
+// Stage changes that need a second look (e.g. reopening a rejected candidate).
+document.querySelectorAll('form[data-confirm-stage]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        const message = form.querySelector('select[name="stage"] option:checked')?.dataset.confirm;
+        if (message && !window.confirm(message)) {
+            event.preventDefault();
+        }
+    });
+});

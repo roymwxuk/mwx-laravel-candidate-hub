@@ -26,7 +26,7 @@ AIの出力は信頼できない入力として扱い、必ず人が原本と見
 
 | 機能 | 内容 |
 | --- | --- |
-| 選考管理 | ステージ遷移ルールを強制（飛び級・差し戻し・終了後の変更は不可） |
+| 選考管理 | ステージ遷移ルールを強制（飛び級・途中の差し戻し・内定後の変更は不可。不採用からは確認ダイアログを経て書類選考に戻して再選考できる） |
 | 権限管理 | 管理者／人事担当／面接官。面接官はアサインされた候補者のみ閲覧可、履歴書原本は閲覧不可 |
 | 監査ログ | ステージ変更・面接官アサイン・AI下書きからの修正項目を記録 |
 | ユーザー管理 | 社内ツールのため自己登録なし。管理者がアカウントを発行 |
@@ -127,6 +127,8 @@ Claudeで抽出する場合は、extractorを `EXTRACTOR_PROVIDER=claude ANTHROP
 
 サンプル履歴書（架空の人物）：`extractor/tests/fixtures/sample_resume.pdf`
 
+デモ中に追加・変更したデータは、ダッシュボードの「デモデータをリセット」ボタン（管理者・人事担当のみ）または `php artisan demo:reset` で初期状態に戻せます。`DEMO_MODE=true` のときだけ有効です。
+
 ## テスト
 
 ```bash
@@ -171,6 +173,6 @@ cd extractor && pytest                # Extractor
 - **Personal data handling.** Private storage, policy-guarded file streaming, interviewers cannot see raw resumes, the extractor is stateless and never logs resume text, service-to-service token auth.
 - **Domain-enforced stage transitions** via the `Stage` enum and `Candidate::transitionTo()` (validated + audited in one transaction).
 
-**Run it:** `docker compose up --build` → http://localhost:8000 (demo accounts above, password `password`).
+**Run it:** `docker compose up --build` → http://localhost:8000 (demo accounts above, password `password`). A "reset demo data" button on the dashboard (admin / HR, only when `DEMO_MODE=true`) or `php artisan demo:reset` restores the seeded state.
 
 **AI usage:** Built in November 2026 while learning Laravel (my day-to-day stack is Node.js / Go), with Claude Code as a coding assistant. I made the design decisions and reviewed and tested the code myself.

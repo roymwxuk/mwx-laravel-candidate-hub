@@ -27,7 +27,7 @@
                                 <span class="text-slate-400">—</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-slate-500">{{ $document->uploader?->name }} ・ {{ $document->created_at->format('Y/m/d H:i') }}</td>
+                        <td class="px-4 py-3 text-slate-500">{{ $document->uploader?->name }} ・ {{ $document->created_at->display() }}</td>
                         <td class="px-4 py-3 text-right"><a href="{{ route('resumes.show', $document) }}" class="text-sky-700 hover:underline">詳細</a></td>
                     </tr>
                 @empty

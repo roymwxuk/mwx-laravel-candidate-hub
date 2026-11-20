@@ -31,6 +31,7 @@ class CandidateController extends Controller
                     ->orWhere('name_kana', 'like', "%{$term}%")
                     ->orWhere('email', 'like', "%{$term}%"));
             })
+            ->with('position:id,title')
             ->withCount('interviewers')
             ->latest('updated_at')
             ->paginate(20)

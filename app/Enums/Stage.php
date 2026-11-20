@@ -4,7 +4,8 @@ namespace App\Enums;
 
 /**
  * Selection stages. Transitions are explicit so that a candidate can never
- * skip a step (e.g. 書類選考 → 内定) or be revived after a terminal state.
+ * skip a step (e.g. 書類選考 → 内定). 内定 is final; 不採用 can only be reopened
+ * back to 書類選考, so a reconsidered candidate goes through every step again.
  */
 enum Stage: string
 {
@@ -34,13 +35,24 @@ enum Stage: string
             self::DocumentScreening => [self::FirstInterview, self::Rejected],
             self::FirstInterview => [self::FinalInterview, self::Rejected],
             self::FinalInterview => [self::Offer, self::Rejected],
-            self::Offer, self::Rejected => [],
+            // A rejected candidate can be reconsidered, but only from the start.
+            self::Rejected => [self::DocumentScreening],
+            self::Offer => [],
         };
     }
 
     public function canTransitionTo(self $next): bool
     {
         return in_array($next, $this->allowedTransitions(), true);
+    }
+
+    /**
+     * Moving back from 不採用 to 書類選考 restarts the selection process,
+     * so the UI asks for an explicit confirmation first.
+     */
+    public function isReopenedBy(self $next): bool
+    {
+        return $this === self::Rejected && $next === self::DocumentScreening;
     }
 
     public function isTerminal(): bool

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EducationLevel;
 use App\Enums\Stage;
 use App\Exceptions\InvalidStageTransition;
 use Database\Factories\CandidateFactory;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 
-#[Fillable(['name', 'name_kana', 'email', 'phone', 'summary', 'skills', 'stage', 'created_by'])]
+#[Fillable(['position_id', 'name', 'name_kana', 'email', 'phone', 'summary', 'skills', 'expected_salary', 'education_level', 'skill_years', 'stage', 'created_by'])]
 class Candidate extends Model
 {
     /** @use HasFactory<CandidateFactory> */
@@ -28,8 +29,19 @@ class Candidate extends Model
     {
         return [
             'skills' => 'array',
+            'expected_salary' => 'integer',
+            'education_level' => EducationLevel::class,
+            'skill_years' => 'array',
             'stage' => Stage::class,
         ];
+    }
+
+    /**
+     * @return BelongsTo<Position, $this>
+     */
+    public function position(): BelongsTo
+    {
+        return $this->belongsTo(Position::class);
     }
 
     /**

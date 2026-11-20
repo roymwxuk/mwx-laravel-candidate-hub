@@ -42,15 +42,45 @@ class CandidateWorkflowTest extends TestCase
         $this->assertDatabaseCount('audit_logs', 0);
     }
 
-    public function test_terminal_stages_cannot_be_changed(): void
+    public function test_an_offer_cannot_be_changed(): void
+    {
+        $candidate = Candidate::factory()->inStage(Stage::Offer)->create();
+
+        $this->actingAs(User::factory()->hr()->create())
+            ->patch(route('candidates.stage.update', $candidate), ['stage' => 'rejected'])
+            ->assertSessionHasErrors('stage');
+
+        $this->assertSame(Stage::Offer, $candidate->fresh()->stage);
+    }
+
+    public function test_a_rejected_candidate_can_be_reopened_from_the_start_and_it_is_audited(): void
+    {
+        $hr = User::factory()->hr()->create();
+        $candidate = Candidate::factory()->inStage(Stage::Rejected)->create();
+
+        $this->actingAs($hr)
+            ->patch(route('candidates.stage.update', $candidate), ['stage' => 'first_interview'])
+            ->assertSessionHasErrors('stage');
+
+        $this->actingAs($hr)
+            ->patch(route('candidates.stage.update', $candidate), ['stage' => 'document_screening', 'note' => '別ポジションで再検討'])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(Stage::DocumentScreening, $candidate->fresh()->stage);
+        $this->assertSame(
+            ['from' => 'rejected', 'to' => 'document_screening', 'note' => '別ポジションで再検討'],
+            AuditLog::sole()->properties,
+        );
+    }
+
+    public function test_the_reopen_option_asks_for_confirmation(): void
     {
         $candidate = Candidate::factory()->inStage(Stage::Rejected)->create();
 
         $this->actingAs(User::factory()->hr()->create())
-            ->patch(route('candidates.stage.update', $candidate), ['stage' => 'first_interview'])
-            ->assertSessionHasErrors('stage');
-
-        $this->assertSame(Stage::Rejected, $candidate->fresh()->stage);
+            ->get(route('candidates.show', $candidate))
+            ->assertSee('書類選考に戻す（選考を再開）')
+            ->assertSee('data-confirm=', false);
     }
 
     public function test_interviewers_only_see_candidates_assigned_to_them(): void

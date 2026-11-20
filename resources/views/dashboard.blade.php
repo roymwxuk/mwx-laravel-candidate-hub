@@ -1,5 +1,14 @@
 <x-layout title="ダッシュボード">
-    <h1 class="mb-6 text-xl font-semibold text-slate-900">ダッシュボード</h1>
+    <div class="mb-6 flex items-center justify-between gap-4">
+        <h1 class="text-xl font-semibold text-slate-900">ダッシュボード</h1>
+
+        @if (config('app.demo_mode') && auth()->user()->canManageCandidates())
+            <form method="POST" action="{{ route('demo.reset') }}" onsubmit="return confirm('すべてのデータを削除し、デモの初期状態に戻します。よろしいですか？');">
+                @csrf
+                <button type="submit" class="rounded-md border border-rose-300 bg-white px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-50">デモデータをリセット</button>
+            </form>
+        @endif
+    </div>
 
     <section class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-5">
         @foreach ($stages as $stage)
@@ -10,7 +19,25 @@
         @endforeach
     </section>
 
+    @if ($positions->isNotEmpty())
+        <section class="mb-8 rounded-lg border border-slate-200 bg-white">
+            <h2 class="border-b border-slate-200 px-4 py-3 font-medium">募集職種</h2>
+            <ul class="divide-y divide-slate-100">
+                @foreach ($positions as $position)
+                    <li class="flex items-center justify-between px-4 py-3 text-sm">
+                        <div>
+                            <a href="{{ route('positions.show', $position) }}" class="font-medium hover:underline">{{ $position->title }}</a>
+                            <span class="ml-2 text-xs text-slate-500">応募者 {{ $position->candidates_count }}名</span>
+                        </div>
+                        <a href="{{ route('positions.analytics', $position) }}" class="text-sky-700 hover:underline">応募者分析 →</a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     @if (auth()->user()->canManageCandidates())
+        @if (config('app.resume_intake'))
         <section class="rounded-lg border border-slate-200 bg-white">
             <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
                 <h2 class="font-medium">確認待ちの履歴書</h2>
@@ -21,7 +48,7 @@
                     <li class="flex items-center justify-between px-4 py-3 text-sm">
                         <div>
                             <div class="font-medium">{{ $document->extracted_data['name'] ?? $document->original_name }}</div>
-                            <div class="text-xs text-slate-500">{{ $document->original_name }} ・ {{ $document->created_at->format('Y/m/d H:i') }}</div>
+                            <div class="text-xs text-slate-500">{{ $document->original_name }} ・ {{ $document->created_at->display() }}</div>
                         </div>
                         <a href="{{ route('resumes.show', $document) }}" class="text-sky-700 hover:underline">確認する →</a>
                     </li>
@@ -30,6 +57,7 @@
                 @endforelse
             </ul>
         </section>
+        @endif
     @else
         <section class="rounded-lg border border-slate-200 bg-white">
             <h2 class="border-b border-slate-200 px-4 py-3 font-medium">担当の候補者</h2>

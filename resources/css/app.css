@@ -3,6 +3,15 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/* Tailwind v4 resets buttons to the default arrow cursor; bring back the
+   pointer for anything clickable (disabled buttons keep the arrow). */
+@layer base {
+    button:not(:disabled),
+    [role='button']:not(:disabled) {
+        cursor: pointer;
+    }
+}
+
 @theme {
     --font-sans: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic UI', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';

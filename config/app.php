@@ -29,6 +29,21 @@ return [
     'env' => env('APP_ENV', 'production'),
 
     /*
+    | Demo mode shows a "reset demo data" button and enables POST /demo/reset.
+    | Never enable it on an installation that holds real data.
+    */
+
+    'demo_mode' => (bool) env('DEMO_MODE', false),
+
+    /*
+    | Resume intake (履歴書取込): the nav link and the dashboard's review
+    | panel. Hidden for now; set RESUME_INTAKE=true to show them again.
+    | The /resumes pages themselves stay reachable by URL.
+    */
+
+    'resume_intake' => (bool) env('RESUME_INTAKE', false),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
@@ -66,6 +81,10 @@ return [
     */
 
     'timezone' => 'UTC',
+
+    // Timestamps are stored in UTC; screens show them in this zone
+    // (see the Carbon "display" macro in AppServiceProvider).
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Asia/Tokyo'),
 
     /*
     |--------------------------------------------------------------------------

@@ -21,7 +21,8 @@ class StageTest extends TestCase
             '一次面接 → 書類選考 (back)' => [Stage::FirstInterview, Stage::DocumentScreening, false],
             '最終面接 → 内定' => [Stage::FinalInterview, Stage::Offer, true],
             '内定 → 不採用 (terminal)' => [Stage::Offer, Stage::Rejected, false],
-            '不採用 → 一次面接 (terminal)' => [Stage::Rejected, Stage::FirstInterview, false],
+            '不採用 → 書類選考 (reopen)' => [Stage::Rejected, Stage::DocumentScreening, true],
+            '不採用 → 一次面接 (reopen only from the start)' => [Stage::Rejected, Stage::FirstInterview, false],
         ];
     }
 
@@ -31,10 +32,16 @@ class StageTest extends TestCase
         $this->assertSame($allowed, $from->canTransitionTo($to));
     }
 
-    public function test_offer_and_rejected_are_terminal(): void
+    public function test_only_offer_is_terminal(): void
     {
         $this->assertTrue(Stage::Offer->isTerminal());
-        $this->assertTrue(Stage::Rejected->isTerminal());
+        $this->assertFalse(Stage::Rejected->isTerminal());
         $this->assertFalse(Stage::DocumentScreening->isTerminal());
+    }
+
+    public function test_only_rejected_to_document_screening_is_a_reopen(): void
+    {
+        $this->assertTrue(Stage::Rejected->isReopenedBy(Stage::DocumentScreening));
+        $this->assertFalse(Stage::DocumentScreening->isReopenedBy(Stage::FirstInterview));
     }
 }

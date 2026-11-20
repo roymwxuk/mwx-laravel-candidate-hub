@@ -47,7 +47,7 @@
                 <ul class="space-y-2 text-sm">
                     @forelse ($candidate->auditLogs as $log)
                         <li class="flex gap-3">
-                            <span class="shrink-0 text-xs text-slate-400">{{ $log->created_at->format('Y/m/d H:i') }}</span>
+                            <span class="shrink-0 text-xs text-slate-400">{{ $log->created_at->display() }}</span>
                             <span>
                                 <span class="font-medium">{{ $log->user?->name ?? 'システム' }}</span>：{{ $log->description() }}
                                 @if (! empty($log->properties['note']))<span class="text-slate-500">（{{ $log->properties['note'] }}）</span>@endif
@@ -72,12 +72,16 @@
                     @if ($candidate->stage->isTerminal())
                         <p class="text-sm text-slate-500">「{{ $candidate->stage->label() }}」は最終ステージのため変更できません。</p>
                     @else
-                        <form method="POST" action="{{ route('candidates.stage.update', $candidate) }}" class="space-y-3">
+                        <form method="POST" action="{{ route('candidates.stage.update', $candidate) }}" class="space-y-3" data-confirm-stage>
                             @csrf
                             @method('PATCH')
                             <select name="stage" class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm">
                                 @foreach ($candidate->stage->allowedTransitions() as $next)
-                                    <option value="{{ $next->value }}">{{ $next->label() }}へ進める</option>
+                                    @if ($candidate->stage->isReopenedBy($next))
+                                        <option value="{{ $next->value }}" data-confirm="「{{ $candidate->name }}」さんを不採用から「{{ $next->label() }}」に戻し、選考を最初からやり直します。よろしいですか？">{{ $next->label() }}に戻す（選考を再開）</option>
+                                    @else
+                                        <option value="{{ $next->value }}">{{ $next->label() }}へ進める</option>
+                                    @endif
                                 @endforeach
                             </select>
                             <x-field-error name="stage" />

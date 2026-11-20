@@ -18,10 +18,11 @@
             <thead class="bg-slate-50 text-left text-xs text-slate-500">
                 <tr>
                     <th class="px-4 py-2 font-medium">氏名</th>
+                    <th class="px-4 py-2 font-medium">応募職種</th>
                     <th class="px-4 py-2 font-medium">選考ステージ</th>
                     <th class="px-4 py-2 font-medium">スキル</th>
                     <th class="px-4 py-2 font-medium">面接官</th>
-                    <th class="px-4 py-2 font-medium">更新日</th>
+                    <th class="px-4 py-2 font-medium">更新日時</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -31,13 +32,14 @@
                             <a href="{{ route('candidates.show', $candidate) }}" class="font-medium text-slate-900 hover:underline">{{ $candidate->name }}</a>
                             @if ($candidate->name_kana)<div class="text-xs text-slate-500">{{ $candidate->name_kana }}</div>@endif
                         </td>
+                        <td class="px-4 py-3 text-slate-600">{{ $candidate->position?->title ?? '未設定' }}</td>
                         <td class="px-4 py-3"><x-badge :status="$candidate->stage" /></td>
                         <td class="px-4 py-3 text-slate-600">{{ collect($candidate->skills)->take(4)->implode(', ') }}</td>
                         <td class="px-4 py-3 text-slate-600">{{ $candidate->interviewers_count }}名</td>
-                        <td class="px-4 py-3 text-slate-500">{{ $candidate->updated_at->format('Y/m/d') }}</td>
+                        <td class="px-4 py-3 text-slate-500">{{ $candidate->updated_at->display() }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">該当する候補者はいません。</td></tr>
+                    <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">該当する候補者はいません。</td></tr>
                 @endforelse
             </tbody>
         </table>

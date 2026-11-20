@@ -11,7 +11,7 @@
             <a href="{{ route('resumes.index') }}" class="text-sm text-slate-500 hover:underline">← 履歴書取込</a>
             <h1 class="mt-1 text-xl font-semibold text-slate-900">{{ $document->original_name }}</h1>
             <p class="text-xs text-slate-500">
-                {{ $document->uploader?->name }} が {{ $document->created_at->format('Y/m/d H:i') }} にアップロード
+                {{ $document->uploader?->name }} が {{ $document->created_at->display() }} にアップロード
                 @if ($document->extractor) ・ 抽出エンジン: <code>{{ $document->extractor }}</code> @endif
             </p>
         </div>
@@ -43,7 +43,7 @@
 
         @case(\App\Enums\ResumeStatus::Confirmed)
             <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-6 text-sm text-emerald-900">
-                {{ $document->confirmer?->name }} が {{ $document->confirmed_at?->format('Y/m/d H:i') }} に確認し、候補者として登録しました。
+                {{ $document->confirmer?->name }} が {{ $document->confirmed_at?->display() }} に確認し、候補者として登録しました。
                 @if ($document->candidate)
                     <a href="{{ route('candidates.show', $document->candidate) }}" class="ml-2 font-medium underline">{{ $document->candidate->name }} さんの詳細へ →</a>
                 @endif

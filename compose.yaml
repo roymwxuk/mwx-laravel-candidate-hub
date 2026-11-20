@@ -1,6 +1,7 @@
 # One-command demo: docker compose up --build  →  http://localhost:8000
 x-app-env: &app-env
   APP_ENV: local
+  DEMO_MODE: "true"
   # Demo-only key. Never reuse it anywhere real.
   APP_KEY: base64:Q2FuZGlkYXRlSHViRGVtb0tleU9ubHkxMjM0NTY3ODk=
   DB_CONNECTION: sqlite

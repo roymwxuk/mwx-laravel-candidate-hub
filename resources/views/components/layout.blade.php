@@ -16,9 +16,11 @@
                     <a href="{{ route('dashboard') }}" class="font-semibold text-slate-900">Candidate Hub</a>
                     <nav class="flex gap-4 text-sm">
                         <a href="{{ route('dashboard') }}" @class(['hover:text-slate-900', 'font-semibold text-slate-900' => request()->routeIs('dashboard'), 'text-slate-500' => ! request()->routeIs('dashboard')])>ダッシュボード</a>
-                        @can('viewAny', App\Models\ResumeDocument::class)
-                            <a href="{{ route('resumes.index') }}" @class(['hover:text-slate-900', 'font-semibold text-slate-900' => request()->routeIs('resumes.*'), 'text-slate-500' => ! request()->routeIs('resumes.*')])>履歴書取込</a>
-                        @endcan
+                        @if (config('app.resume_intake'))
+                            @can('viewAny', App\Models\ResumeDocument::class)
+                                <a href="{{ route('resumes.index') }}" @class(['hover:text-slate-900', 'font-semibold text-slate-900' => request()->routeIs('resumes.*'), 'text-slate-500' => ! request()->routeIs('resumes.*')])>履歴書取込</a>
+                            @endcan
+                        @endif
                         <a href="{{ route('candidates.index') }}" @class(['hover:text-slate-900', 'font-semibold text-slate-900' => request()->routeIs('candidates.*'), 'text-slate-500' => ! request()->routeIs('candidates.*')])>候補者</a>
                         @can('viewAny', App\Models\User::class)
                             <a href="{{ route('users.index') }}" @class(['hover:text-slate-900', 'font-semibold text-slate-900' => request()->routeIs('users.*'), 'text-slate-500' => ! request()->routeIs('users.*')])>ユーザー管理</a>
