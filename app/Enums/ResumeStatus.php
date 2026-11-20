@@ -3,9 +3,21 @@
 namespace App\Enums;
 
 /**
- * Lifecycle of an uploaded resume:
- * uploaded → processing → extracted (draft awaiting human review) → confirmed
- *                       ↘ failed (can be retried)
+ * Lifecycle of an uploaded resume, as a state machine:
+ *
+ *   uploaded → processing → extracted → confirmed (final)
+ *        ↖        ↓
+ *          failed
+ *
+ * - uploaded   → processing  the queue job picks it up
+ * - uploaded   → failed      the job died before it could start
+ * - processing → extracted   the extractor returned a valid draft
+ * - processing → failed      the extractor errored or broke the contract
+ * - failed     → uploaded    a person pressed 再解析 (retry)
+ * - extracted  → confirmed   a person reviewed the draft and registered the candidate
+ *
+ * Anything else (e.g. overwriting a reviewed draft, or reviving a confirmed
+ * resume) is rejected by ResumeDocument::transitionTo().
  */
 enum ResumeStatus: string
 {
@@ -36,8 +48,32 @@ enum ResumeStatus: string
         };
     }
 
+    /**
+     * @return list<self>
+     */
+    public function allowedTransitions(): array
+    {
+        return match ($this) {
+            self::Uploaded => [self::Processing, self::Failed],
+            self::Processing => [self::Extracted, self::Failed],
+            self::Failed => [self::Uploaded],
+            self::Extracted => [self::Confirmed],
+            self::Confirmed => [],
+        };
+    }
+
+    public function canTransitionTo(self $next): bool
+    {
+        return in_array($next, $this->allowedTransitions(), true);
+    }
+
+    public function isTerminal(): bool
+    {
+        return $this->allowedTransitions() === [];
+    }
+
     public function isRetryable(): bool
     {
-        return $this === self::Failed;
+        return $this->canTransitionTo(self::Uploaded);
     }
 }

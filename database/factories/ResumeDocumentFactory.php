@@ -53,6 +53,17 @@ class ResumeDocumentFactory extends Factory
         ]);
     }
 
+    /**
+     * A document whose draft was reviewed and turned into a candidate.
+     */
+    public function confirmed(): static
+    {
+        return $this->extracted()->state(fn () => [
+            'status' => ResumeStatus::Confirmed,
+            'confirmed_at' => now(),
+        ]);
+    }
+
     public function failed(string $message = '抽出サービスに接続できません'): static
     {
         return $this->state(['status' => ResumeStatus::Failed, 'error_message' => $message]);

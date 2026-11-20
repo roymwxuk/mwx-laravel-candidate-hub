@@ -28,7 +28,9 @@ class ConfirmResume
             // Lock the row so a double-submit cannot create two candidates.
             $document = ResumeDocument::query()->lockForUpdate()->findOrFail($document->getKey());
 
-            if ($document->status !== ResumeStatus::Extracted) {
+            // Checked up front so no candidate is created for a resume that
+            // cannot be confirmed; transitionTo() below enforces it again.
+            if (! $document->status->canTransitionTo(ResumeStatus::Confirmed)) {
                 throw new DomainException('この履歴書は確認待ちの状態ではありません。');
             }
 
@@ -49,8 +51,7 @@ class ConfirmResume
                 $candidate->workHistories()->create([...$history, 'sort_order' => $i]);
             }
 
-            $document->update([
-                'status' => ResumeStatus::Confirmed,
+            $document->transitionTo(ResumeStatus::Confirmed, [
                 'candidate_id' => $candidate->getKey(),
                 'confirmed_by' => $reviewer->getKey(),
                 'confirmed_at' => now(),

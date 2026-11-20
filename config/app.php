@@ -36,14 +36,6 @@ return [
     'demo_mode' => (bool) env('DEMO_MODE', false),
 
     /*
-    | Resume intake (履歴書取込): the nav link and the dashboard's review
-    | panel. Hidden for now; set RESUME_INTAKE=true to show them again.
-    | The /resumes pages themselves stay reachable by URL.
-    */
-
-    'resume_intake' => (bool) env('RESUME_INTAKE', false),
-
-    /*
     |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------

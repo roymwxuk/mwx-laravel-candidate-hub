@@ -37,7 +37,6 @@
     @endif
 
     @if (auth()->user()->canManageCandidates())
-        @if (config('app.resume_intake'))
         <section class="rounded-lg border border-slate-200 bg-white">
             <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
                 <h2 class="font-medium">確認待ちの履歴書</h2>
@@ -57,7 +56,6 @@
                 @endforelse
             </ul>
         </section>
-        @endif
     @else
         <section class="rounded-lg border border-slate-200 bg-white">
             <h2 class="border-b border-slate-200 px-4 py-3 font-medium">担当の候補者</h2>

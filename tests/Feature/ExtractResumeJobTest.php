@@ -148,11 +148,31 @@ class ExtractResumeJobTest extends TestCase
     public function test_an_already_reviewed_draft_is_never_overwritten(): void
     {
         Http::fake();
-        $this->document->update(['status' => ResumeStatus::Confirmed]);
+        $document = ResumeDocument::factory()->confirmed()->create(['path' => 'resumes/sample.pdf']);
 
-        ExtractResumeJob::dispatchSync($this->document);
+        ExtractResumeJob::dispatchSync($document);
 
-        $this->assertSame(ResumeStatus::Confirmed, $this->document->fresh()->status);
+        $this->assertSame(ResumeStatus::Confirmed, $document->fresh()->status);
         Http::assertNothingSent();
+    }
+
+    public function test_a_queue_retry_continues_a_document_that_is_already_processing(): void
+    {
+        Http::fake(['extractor.test/*' => Http::response($this->payload())]);
+        $document = ResumeDocument::factory()->create(['path' => 'resumes/sample.pdf', 'status' => ResumeStatus::Processing]);
+
+        ExtractResumeJob::dispatchSync($document);
+
+        $this->assertSame(ResumeStatus::Extracted, $document->fresh()->status);
+    }
+
+    public function test_a_failing_duplicate_job_does_not_knock_a_good_draft_back_to_failed(): void
+    {
+        $document = ResumeDocument::factory()->extracted()->create(['path' => 'resumes/sample.pdf']);
+
+        (new ExtractResumeJob($document))->failed(new ExtractionFailedException('late failure'));
+
+        $this->assertSame(ResumeStatus::Extracted, $document->fresh()->status);
+        $this->assertNull($document->fresh()->error_message);
     }
 }

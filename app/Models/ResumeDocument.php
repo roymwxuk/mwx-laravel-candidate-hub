@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Enums\ResumeStatus;
+use App\Exceptions\InvalidResumeTransition;
 use Database\Factories\ResumeDocumentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use LogicException;
 
 #[Fillable([
     'uploaded_by', 'candidate_id', 'original_name', 'path', 'mime_type', 'size', 'status',
@@ -65,8 +67,55 @@ class ResumeDocument extends Model
         return $this->belongsTo(Candidate::class);
     }
 
+    protected static function booted(): void
+    {
+        // transitionTo() writes through the query builder, so a status change
+        // arriving here came from a plain update()/save() and skipped the
+        // state machine. Fail loudly instead of saving an unchecked state.
+        static::updating(function (self $document) {
+            if ($document->isDirty('status')) {
+                throw new LogicException('ResumeDocument の status は transitionTo() で変更してください。');
+            }
+        });
+    }
+
     public function isAwaitingReview(): bool
     {
         return $this->status === ResumeStatus::Extracted;
+    }
+
+    /**
+     * The only way to change `status` after creation. Rejects moves the state
+     * machine does not allow, and applies the change as a compare-and-set
+     * (`... WHERE status = <current>`), so a queue job and a person acting on
+     * the same resume at the same time cannot both win.
+     *
+     * @param  array<string, mixed>  $attributes  other columns to save in the same update
+     *
+     * @throws InvalidResumeTransition
+     */
+    public function transitionTo(ResumeStatus $next, array $attributes = []): void
+    {
+        $from = $this->status;
+
+        if (! $from->canTransitionTo($next)) {
+            throw InvalidResumeTransition::between($from, $next);
+        }
+
+        // Fill through the model so casts (enum, JSON) produce the stored values.
+        $this->forceFill([...$attributes, 'status' => $next])->updateTimestamps();
+
+        $updated = static::query()
+            ->whereKey($this->getKey())
+            ->where('status', $from->value)
+            ->update($this->getDirty());
+
+        if ($updated === 0) {
+            $this->refresh();
+
+            throw InvalidResumeTransition::changedConcurrently($from, $next);
+        }
+
+        $this->syncOriginal();
     }
 }

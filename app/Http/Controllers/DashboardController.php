@@ -22,7 +22,7 @@ class DashboardController extends Controller
             ->groupBy('stage')
             ->pluck('total', 'stage');
 
-        $pendingReviews = $user->canManageCandidates() && config('app.resume_intake')
+        $pendingReviews = $user->canManageCandidates()
             ? ResumeDocument::query()->where('status', ResumeStatus::Extracted)->latest()->limit(5)->get()
             : collect();
 

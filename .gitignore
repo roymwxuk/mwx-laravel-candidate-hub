@@ -31,3 +31,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 /extractor/.venv/
+
+# Personal notes
+/TODO.md

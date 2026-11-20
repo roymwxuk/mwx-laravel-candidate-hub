@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\ConfirmResume;
 use App\Enums\ResumeStatus;
+use App\Exceptions\InvalidResumeTransition;
 use App\Http\Requests\ConfirmResumeRequest;
 use App\Http\Requests\StoreResumeRequest;
 use App\Jobs\ExtractResumeJob;
@@ -82,7 +83,13 @@ class ResumeDocumentController extends Controller
     {
         Gate::authorize('retry', $resume);
 
-        $resume->update(['status' => ResumeStatus::Uploaded, 'error_message' => null]);
+        try {
+            $resume->transitionTo(ResumeStatus::Uploaded, ['error_message' => null]);
+        } catch (InvalidResumeTransition $e) {
+            // e.g. a double click: the first request already restarted it.
+            return redirect()->route('resumes.show', $resume)->with('error', $e->getMessage());
+        }
+
         ExtractResumeJob::dispatch($resume);
 
         return redirect()->route('resumes.show', $resume)->with('status', '再解析を開始しました。');

@@ -10,26 +10,22 @@ class ResumeIntakeVisibilityTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_resume_intake_is_hidden_when_switched_off(): void
+    public function test_hr_sees_resume_intake_in_the_nav_and_on_the_dashboard(): void
     {
-        config(['app.resume_intake' => false]);
-
-        $this->actingAs(User::factory()->hr()->create())
-            ->get(route('dashboard'))
-            ->assertOk()
-            ->assertDontSee('履歴書取込')
-            ->assertDontSee('確認待ちの履歴書')
-            ->assertDontSee(route('resumes.create'), false);
-    }
-
-    public function test_resume_intake_is_shown_when_switched_on(): void
-    {
-        config(['app.resume_intake' => true]);
-
         $this->actingAs(User::factory()->hr()->create())
             ->get(route('dashboard'))
             ->assertOk()
             ->assertSee('履歴書取込')
-            ->assertSee('確認待ちの履歴書');
+            ->assertSee('確認待ちの履歴書')
+            ->assertSee(route('resumes.create'), false);
+    }
+
+    public function test_interviewers_do_not_see_resume_intake(): void
+    {
+        $this->actingAs(User::factory()->interviewer()->create())
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('履歴書取込')
+            ->assertDontSee('確認待ちの履歴書');
     }
 }
