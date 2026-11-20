@@ -5,6 +5,8 @@ x-app-env: &app-env
   APP_KEY: base64:Q2FuZGlkYXRlSHViRGVtb0tleU9ubHkxMjM0NTY3ODk=
   DB_CONNECTION: sqlite
   DB_DATABASE: /data/database.sqlite
+  DB_BUSY_TIMEOUT: 5000
+  DB_JOURNAL_MODE: wal
   QUEUE_CONNECTION: database
   EXTRACTOR_URL: http://extractor:8001
   EXTRACTOR_TOKEN: ${EXTRACTOR_TOKEN:-local-dev-token}

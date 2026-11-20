@@ -25,4 +25,5 @@ RUN composer dump-autoload --optimize \
 
 EXPOSE 8000
 ENTRYPOINT ["docker/entrypoint.sh"]
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# --no-reload: otherwise `serve` strips container env vars (APP_KEY, DB_DATABASE, EXTRACTOR_URL…) from its worker.
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000", "--no-reload"]
