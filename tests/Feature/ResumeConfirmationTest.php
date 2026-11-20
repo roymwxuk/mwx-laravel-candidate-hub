@@ -6,6 +6,7 @@ use App\Enums\ResumeStatus;
 use App\Enums\Stage;
 use App\Models\AuditLog;
 use App\Models\Candidate;
+use App\Models\Position;
 use App\Models\ResumeDocument;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,6 +33,36 @@ class ResumeConfirmationTest extends TestCase
                 ['company' => '', 'title' => '', 'started_on' => '', 'ended_on' => '', 'description' => ''], // blank row is ignored
             ],
         ], $overrides);
+    }
+
+    public function test_hr_picks_the_role_the_resume_is_for(): void
+    {
+        $position = Position::factory()->create(['title' => 'CTO（最高技術責任者）']);
+        $document = ResumeDocument::factory()->extracted()->create();
+        $hr = User::factory()->hr()->create();
+
+        $this->actingAs($hr)
+            ->get(route('resumes.show', $document))
+            ->assertOk()
+            ->assertSee('応募職種')
+            ->assertSee('CTO（最高技術責任者）');
+
+        $this->actingAs($hr)
+            ->post(route('resumes.confirm', $document), $this->reviewedInput(['position_id' => $position->id]))
+            ->assertRedirect();
+
+        $this->assertTrue(Candidate::sole()->position->is($position));
+    }
+
+    public function test_an_unknown_role_is_rejected(): void
+    {
+        $document = ResumeDocument::factory()->extracted()->create();
+
+        $this->actingAs(User::factory()->hr()->create())
+            ->post(route('resumes.confirm', $document), $this->reviewedInput(['position_id' => 999]))
+            ->assertSessionHasErrors('position_id');
+
+        $this->assertSame(0, Candidate::count());
     }
 
     public function test_hr_confirms_a_draft_and_a_candidate_is_created(): void

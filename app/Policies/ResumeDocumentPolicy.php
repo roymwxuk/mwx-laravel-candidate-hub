@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\ResumeSource;
 use App\Models\ResumeDocument;
 use App\Models\User;
 
@@ -33,6 +34,8 @@ class ResumeDocumentPolicy
 
     public function retry(User $user, ResumeDocument $document): bool
     {
-        return $user->canManageCandidates() && $document->status->isRetryable();
+        return $user->canManageCandidates()
+            && $document->source === ResumeSource::Staff
+            && $document->status->isRetryable();
     }
 }

@@ -23,7 +23,7 @@ class DashboardController extends Controller
             ->pluck('total', 'stage');
 
         $pendingReviews = $user->canManageCandidates()
-            ? ResumeDocument::query()->where('status', ResumeStatus::Extracted)->latest()->limit(5)->get()
+            ? ResumeDocument::query()->uploadedByStaff()->where('status', ResumeStatus::Extracted)->latest()->limit(5)->get()
             : collect();
 
         return view('dashboard', [

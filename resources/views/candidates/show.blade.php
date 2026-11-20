@@ -49,7 +49,7 @@
                         <li class="flex gap-3">
                             <span class="shrink-0 text-xs text-slate-400">{{ $log->created_at->display() }}</span>
                             <span>
-                                <span class="font-medium">{{ $log->user?->name ?? 'システム' }}</span>：{{ $log->description() }}
+                                <span class="font-medium">{{ $log->user?->name ?? ($log->action === 'candidate.applied' ? '応募者' : 'システム') }}</span>：{{ $log->description() }}
                                 @if (! empty($log->properties['note']))<span class="text-slate-500">（{{ $log->properties['note'] }}）</span>@endif
                                 @if (array_key_exists('corrected_fields', $log->properties ?? []))
                                     <span class="text-xs text-slate-500">
@@ -130,7 +130,13 @@
                 <section class="rounded-lg border border-slate-200 bg-white p-5 text-sm">
                     <h2 class="mb-2 font-medium">応募書類</h2>
                     <a href="{{ route('resumes.file', $candidate->resumeDocument) }}" target="_blank" class="text-sky-700 hover:underline">{{ $candidate->resumeDocument->original_name }}</a>
-                    <p class="mt-1 text-xs text-slate-500">登録者: {{ $candidate->creator?->name ?? '—' }}</p>
+                    <p class="mt-1 text-xs text-slate-500">
+                        @if ($candidate->resumeDocument->source === \App\Enums\ResumeSource::Application)
+                            応募者本人が応募フォームからアップロード
+                        @else
+                            登録者: {{ $candidate->creator?->name ?? '—' }}
+                        @endif
+                    </p>
                 </section>
             @endif
         </aside>

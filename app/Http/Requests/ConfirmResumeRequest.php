@@ -41,6 +41,7 @@ class ConfirmResumeRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'position_id' => ['nullable', 'integer', 'exists:positions,id'],
             'name' => ['required', 'string', 'max:100'],
             'name_kana' => ['nullable', 'string', 'max:100'],
             'email' => ['nullable', 'email', 'max:255'],
@@ -83,6 +84,7 @@ class ConfirmResumeRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'position_id' => '応募職種',
             'name' => '氏名',
             'name_kana' => 'ふりがな',
             'email' => 'メールアドレス',

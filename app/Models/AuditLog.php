@@ -62,6 +62,9 @@ class AuditLog extends Model
 
         return match ($this->action) {
             'candidate.created_from_resume' => '履歴書から候補者を登録しました',
+            'candidate.applied' => ($p['autofilled'] ?? false)
+                ? '応募フォームから応募しました（履歴書から自動入力）'
+                : '応募フォームから応募しました',
             'stage.changed' => sprintf(
                 '選考ステージを「%s」から「%s」に変更しました',
                 Stage::tryFrom($p['from'] ?? '')?->label() ?? '?',

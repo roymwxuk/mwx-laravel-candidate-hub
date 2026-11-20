@@ -8,6 +8,7 @@ use App\Exceptions\InvalidResumeTransition;
 use App\Http\Requests\ConfirmResumeRequest;
 use App\Http\Requests\StoreResumeRequest;
 use App\Jobs\ExtractResumeJob;
+use App\Models\Position;
 use App\Models\ResumeDocument;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
@@ -24,7 +25,8 @@ class ResumeDocumentController extends Controller
         Gate::authorize('viewAny', ResumeDocument::class);
 
         return view('resumes.index', [
-            'documents' => ResumeDocument::query()->with('uploader', 'candidate')->latest()->paginate(20),
+            // Applicants' auto-fill uploads are reached through the candidate instead.
+            'documents' => ResumeDocument::query()->uploadedByStaff()->with('uploader', 'candidate')->latest()->paginate(20),
         ]);
     }
 
@@ -62,7 +64,10 @@ class ResumeDocumentController extends Controller
     {
         Gate::authorize('view', $resume);
 
-        return view('resumes.show', ['document' => $resume->load('uploader', 'confirmer', 'candidate')]);
+        return view('resumes.show', [
+            'document' => $resume->load('uploader', 'confirmer', 'candidate'),
+            'positions' => Position::query()->orderBy('id')->get(['id', 'title']),
+        ]);
     }
 
     /**

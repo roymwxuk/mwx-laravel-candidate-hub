@@ -8,6 +8,7 @@ use App\Models\AuditLog;
 use App\Models\Candidate;
 use App\Models\ResumeDocument;
 use App\Models\User;
+use App\Services\ResumeExtraction\DraftCorrections;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 
@@ -37,6 +38,7 @@ class ConfirmResume
             $histories = array_values($data['work_histories'] ?? []);
 
             $candidate = Candidate::create([
+                'position_id' => $data['position_id'] ?? null,
                 'name' => $data['name'],
                 'name_kana' => $data['name_kana'] ?? null,
                 'email' => $data['email'] ?? null,
@@ -62,42 +64,10 @@ class ConfirmResume
                 'extractor' => $document->extractor,
                 // Which fields the human had to correct: a cheap, honest signal
                 // of extraction quality that can be tracked over time.
-                'corrected_fields' => $this->correctedFields($document->extracted_data ?? [], $data, $histories),
+                'corrected_fields' => DraftCorrections::between($document->extracted_data ?? [], $data, $histories),
             ]);
 
             return $candidate;
         });
-    }
-
-    /**
-     * @param  array<string, mixed>  $draft
-     * @param  array<string, mixed>  $final
-     * @param  list<array<string, mixed>>  $histories
-     * @return list<string>
-     */
-    private function correctedFields(array $draft, array $final, array $histories): array
-    {
-        $changed = [];
-
-        foreach (['name', 'name_kana', 'email', 'phone', 'summary'] as $key) {
-            if (($draft[$key] ?? null) !== (($final[$key] ?? null) ?: null)) {
-                $changed[] = $key;
-            }
-        }
-
-        if (array_values($draft['skills'] ?? []) !== array_values($final['skills'] ?? [])) {
-            $changed[] = 'skills';
-        }
-
-        $normalize = fn (array $rows) => array_map(
-            fn (array $r) => array_map(fn ($v) => $v ?: null, array_intersect_key($r, array_flip(['company', 'title', 'started_on', 'ended_on', 'description']))),
-            $rows,
-        );
-
-        if ($normalize($draft['work_histories'] ?? []) != $normalize($histories)) {
-            $changed[] = 'work_histories';
-        }
-
-        return $changed;
     }
 }

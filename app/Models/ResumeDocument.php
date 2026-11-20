@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
+use App\Enums\ResumeSource;
 use App\Enums\ResumeStatus;
 use App\Exceptions\InvalidResumeTransition;
 use Database\Factories\ResumeDocumentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use LogicException;
 
 #[Fillable([
-    'uploaded_by', 'candidate_id', 'original_name', 'path', 'mime_type', 'size', 'status',
+    'uploaded_by', 'candidate_id', 'source', 'original_name', 'path', 'mime_type', 'size', 'status',
     'extracted_data', 'warnings', 'raw_response', 'extractor', 'error_message',
     'processed_at', 'confirmed_by', 'confirmed_at',
 ])]
@@ -29,12 +31,18 @@ class ResumeDocument extends Model
     protected $hidden = ['raw_response', 'path'];
 
     /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = ['source' => 'staff'];
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
             'status' => ResumeStatus::class,
+            'source' => ResumeSource::class,
             'extracted_data' => 'array',
             'warnings' => 'array',
             'raw_response' => 'array',
@@ -79,9 +87,21 @@ class ResumeDocument extends Model
         });
     }
 
+    /**
+     * A draft HR should review: applicants review their own drafts on the
+     * public form, so those never show up in HR's queue.
+     */
     public function isAwaitingReview(): bool
     {
-        return $this->status === ResumeStatus::Extracted;
+        return $this->status === ResumeStatus::Extracted && $this->source === ResumeSource::Staff;
+    }
+
+    /**
+     * @param  Builder<ResumeDocument>  $query
+     */
+    public function scopeUploadedByStaff(Builder $query): void
+    {
+        $query->where('source', ResumeSource::Staff->value);
     }
 
     /**

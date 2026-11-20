@@ -21,6 +21,7 @@ AIの出力は信頼できない入力として扱い、必ず人が原本と見
 | AI抽出 | PDFアップロード → キューでジョブ実行 → 抽出サービス（ルールベース／Claude tool use）が構造化JSONを返す |
 | 確認・修正画面 | 左に原本PDF、右に自動入力済みのフォーム。不正な項目は警告として表示し、人が修正してから確定 |
 | 精度の記録 | 確定時に、人がAIの下書きから修正した項目（`corrected_fields`）を記録 |
+| 採用ページ（公開） | ログイン不要の求人一覧・募集要項・応募フォーム（`/jobs`）。応募者が履歴書をアップロードするとフォームに自動入力され、**応募者本人が確認・修正してから送信**する。応募職種が付いた状態で書類選考に入る。個人情報の取り扱いへの同意必須、IPごとの回数制限あり |
 
 **登録後の採用ワークフロー**
 
@@ -166,7 +167,8 @@ cd extractor && pytest                # Extractor
 
 **Key design decisions**
 
-- **LLM output is untrusted input.** Nothing extracted reaches the candidate tables without human confirmation; `ConfirmResume` is the only write path.
+- **LLM output is untrusted input.** Nothing extracted reaches the candidate tables without human confirmation: HR confirms drafts in `ConfirmResume`, and applicants confirm their own auto-filled drafts on the public form in `SubmitApplication`.
+- **Public careers pages** (`/jobs`, no login): open roles, job descriptions and an application form that auto-fills from an uploaded resume. Consent is required before any upload, uploads are rate limited per IP, and an applicant can only reach their own upload (its id lives in the session, never the URL).
 - **Three layers of validation** (forced tool schema → Pydantic → Laravel `ExtractionResult`). A broken envelope fails the job; a broken *field* is dropped and surfaced as a warning, so one bad value does not discard a useful draft.
 - **Transient vs. permanent failures.** Timeouts/5xx are retried by the queue; contract violations fail fast to avoid pointless retries and LLM cost.
 - **Measurable AI quality.** Fields the reviewer corrected are logged (`corrected_fields`), giving a cheap accuracy signal per extractor.

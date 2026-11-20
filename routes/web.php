@@ -6,11 +6,28 @@ use App\Http\Controllers\CandidateInterviewerController;
 use App\Http\Controllers\CandidateStageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DemoResetController;
+use App\Http\Controllers\JobController;
 use App\Http\Controllers\PositionAnalyticsController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ResumeDocumentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+
+// Public careers pages: open to everyone, signed in or not.
+Route::prefix('jobs')->name('jobs.')->group(function () {
+    Route::get('/', [JobController::class, 'index'])->name('index');
+    Route::get('/{position}', [JobController::class, 'show'])->name('show');
+    Route::get('/{position}/apply', [JobController::class, 'apply'])->name('apply');
+    Route::get('/{position}/apply/status', [JobController::class, 'status'])->name('apply.status');
+    Route::post('/{position}/apply/discard', [JobController::class, 'discardResume'])->name('apply.discard');
+    Route::get('/{position}/applied', [JobController::class, 'applied'])->name('applied');
+
+    // Anyone can post these, so they are rate limited per IP (see AppServiceProvider).
+    Route::middleware('throttle:applications')->group(function () {
+        Route::post('/{position}/apply/resume', [JobController::class, 'uploadResume'])->name('apply.resume');
+        Route::post('/{position}/apply', [JobController::class, 'submit'])->name('apply.submit');
+    });
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');

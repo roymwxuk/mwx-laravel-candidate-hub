@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\ResumeSource;
 use App\Enums\ResumeStatus;
 use App\Models\ResumeDocument;
 use App\Models\User;
@@ -62,6 +63,14 @@ class ResumeDocumentFactory extends Factory
             'status' => ResumeStatus::Confirmed,
             'confirmed_at' => now(),
         ]);
+    }
+
+    /**
+     * Uploaded by an applicant on the public form (no staff uploader).
+     */
+    public function fromApplication(): static
+    {
+        return $this->state(['source' => ResumeSource::Application, 'uploaded_by' => null]);
     }
 
     public function failed(string $message = '抽出サービスに接続できません'): static

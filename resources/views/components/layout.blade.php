@@ -23,6 +23,7 @@
                         @can('viewAny', App\Models\User::class)
                             <a href="{{ route('users.index') }}" @class(['hover:text-slate-900', 'font-semibold text-slate-900' => request()->routeIs('users.*'), 'text-slate-500' => ! request()->routeIs('users.*')])>ユーザー管理</a>
                         @endcan
+                        <a href="{{ route('jobs.index') }}" @class(['hover:text-slate-900', 'font-semibold text-slate-900' => request()->routeIs('jobs.*'), 'text-slate-500' => ! request()->routeIs('jobs.*')])>採用ページ</a>
                     </nav>
                 </div>
                 <div class="flex items-center gap-3 text-sm">
@@ -33,6 +34,14 @@
                         <button class="text-slate-500 hover:text-slate-900">ログアウト</button>
                     </form>
                 </div>
+            </div>
+        </header>
+    @else
+        {{-- Visitors: the public careers pages (and the staff login). --}}
+        <header class="border-b border-slate-200 bg-white">
+            <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+                <a href="{{ route('jobs.index') }}" class="font-semibold text-slate-900">Candidate Hub <span class="font-normal text-slate-500">採用情報</span></a>
+                <a href="{{ route('login') }}" class="text-sm text-slate-500 hover:text-slate-900">社員ログイン</a>
             </div>
         </header>
     @endauth
