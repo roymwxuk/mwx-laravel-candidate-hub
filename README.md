@@ -1,17 +1,31 @@
 # Candidate Hub
 
-履歴書PDFをアップロードすると、AIが氏名・連絡先・職歴などを抽出して入力フォームに**下書き**として反映し、人事担当者が確認・修正してから候補者として登録する採用管理アプリです。
-登録後は選考ステージ（書類選考 → 一次面接 → 最終面接 → 内定／不採用）と面接官のアサインを管理できます。
+半構造化された日本語の履歴書・職務経歴書（PDF）をLLMで解析し、入力フォームを自動入力するLaravelアプリです。
+AIの出力は信頼できない入力として扱い、必ず人が原本と見比べて確認・修正してから登録します。
+登録されたデータは、そのまま採用選考のワークフロー（選考ステージ・面接官アサイン・監査ログ）に引き継がれます。
 
 [English below](#english)
 
 ![CI](https://github.com/roymwxuk/mwx-laravel-candidate-hub/actions/workflows/ci.yml/badge.svg)
 
+## なぜこのテーマか
+
+日本の履歴書・職務経歴書は、ある程度決まった書式がありながら、項目の並びや書き方は人によってばらばらです。人事担当者がそれを手で入力し直す作業は、採用の現場で実際に負担になっています。一方で、AIに完全自動で登録させるのは誤りが混入するリスクが高いため、「AIが下書きを作り、人が確認して確定する」形にしました。
+
 ## 主な機能
+
+**履歴書の自動入力（中心機能）**
 
 | 機能 | 内容 |
 | --- | --- |
-| 履歴書取込 | PDFアップロード → キューでAI抽出 → 原本と並べて確認・修正 → 候補者登録 |
+| AI抽出 | PDFアップロード → キューでジョブ実行 → 抽出サービス（ルールベース／Claude tool use）が構造化JSONを返す |
+| 確認・修正画面 | 左に原本PDF、右に自動入力済みのフォーム。不正な項目は警告として表示し、人が修正してから確定 |
+| 精度の記録 | 確定時に、人がAIの下書きから修正した項目（`corrected_fields`）を記録 |
+
+**登録後の採用ワークフロー**
+
+| 機能 | 内容 |
+| --- | --- |
 | 選考管理 | ステージ遷移ルールを強制（飛び級・差し戻し・終了後の変更は不可） |
 | 権限管理 | 管理者／人事担当／面接官。面接官はアサインされた候補者のみ閲覧可、履歴書原本は閲覧不可 |
 | 監査ログ | ステージ変更・面接官アサイン・AI下書きからの修正項目を記録 |
@@ -142,7 +156,9 @@ cd extractor && pytest                # Extractor
 
 ## English
 
-**Candidate Hub** is a recruiting tool for HR teams. HR staff upload a resume PDF, an AI extraction microservice turns it into a structured **draft**, and a human reviews and corrects it side by side with the original before it becomes a candidate record. Candidates then move through an enforced selection pipeline (screening → 1st interview → final interview → offer / rejected) with interviewer assignment and an audit trail.
+**Candidate Hub** is a Laravel app that uses an LLM to read semi-structured Japanese resumes (履歴書 / 職務経歴書, PDF) and auto-fill a resume form. The LLM output is treated as untrusted input: a person always checks the pre-filled form against the original PDF, corrects it, and only then confirms it. Confirmed data then flows into a recruiting workflow (selection stages, interviewer assignment, audit log).
+
+**Why this problem.** Japanese resumes follow a loosely standard format, but layouts and wording vary from person to person, so HR staff end up re-typing them by hand. Fully automatic entry is too risky, so the design is an AI draft plus human review.
 
 **Stack:** Laravel 13 (PHP 8.3+), Blade + Tailwind CSS, queued jobs, SQLite (dev) · Python 3.12 / FastAPI extractor (rule-based mock or Claude tool use) · PHPUnit, pytest · GitHub Actions · Docker Compose.
 

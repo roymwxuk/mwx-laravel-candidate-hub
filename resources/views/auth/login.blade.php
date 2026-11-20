@@ -1,7 +1,7 @@
 <x-layout title="ログイン">
     <div class="mx-auto mt-16 max-w-sm">
         <h1 class="mb-1 text-center text-2xl font-semibold text-slate-900">Candidate Hub</h1>
-        <p class="mb-8 text-center text-sm text-slate-500">採用候補者管理システム</p>
+        <p class="mb-8 text-center text-sm text-slate-500">AI履歴書取込・採用管理</p>
 
         <form method="POST" action="{{ route('login') }}" class="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
             @csrf
