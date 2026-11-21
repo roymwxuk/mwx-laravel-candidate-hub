@@ -123,6 +123,34 @@ class ResumeConfirmationTest extends TestCase
             ->assertDontSeeText('その他・回答しない');
     }
 
+    public function test_address_is_prefilled_saved_and_shown_to_hr_only(): void
+    {
+        $document = ResumeDocument::factory()->extracted(['address' => '東京都サンプル区見本町2-4-8'])->create();
+        $hr = User::factory()->hr()->create();
+
+        $this->actingAs($hr)
+            ->get(route('resumes.show', $document))
+            ->assertOk()
+            ->assertSee('value="東京都サンプル区見本町2-4-8"', escape: false);
+
+        $this->actingAs($hr)
+            ->post(route('resumes.confirm', $document), $this->reviewedInput(['address' => '大阪府見本市1-1-1']))
+            ->assertRedirect();
+
+        $candidate = Candidate::sole();
+        $this->assertSame('大阪府見本市1-1-1', $candidate->address);
+        $this->assertContains('address', AuditLog::sole()->properties['corrected_fields']);
+
+        $this->actingAs($hr)->get(route('candidates.show', $candidate))
+            ->assertSeeText('大阪府見本市1-1-1');
+
+        $interviewer = User::factory()->interviewer()->create();
+        $candidate->interviewers()->attach($interviewer);
+        $this->actingAs($interviewer)->get(route('candidates.show', $candidate))
+            ->assertOk()
+            ->assertDontSeeText('大阪府見本市1-1-1');
+    }
+
     public function test_an_unknown_gender_is_rejected_and_blank_means_not_stated(): void
     {
         $hr = User::factory()->hr()->create();

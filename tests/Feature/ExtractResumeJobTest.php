@@ -61,6 +61,7 @@ class ExtractResumeJobTest extends TestCase
     public function test_profile_fields_are_kept_when_valid(): void
     {
         Http::fake(['extractor.test/*' => Http::response($this->payload([
+            'address' => '東京都サンプル区見本町2-4-8 サンプルハイツ205',
             'birth_date' => '1990-04-01',
             'gender' => 'female',
             'languages' => ['英語（TOEIC 850点）', '中国語（日常会話）', '英語（TOEIC 850点）'],
@@ -75,6 +76,7 @@ class ExtractResumeJobTest extends TestCase
         ExtractResumeJob::dispatchSync($this->document);
 
         $draft = $this->document->fresh()->extracted_data;
+        $this->assertSame('東京都サンプル区見本町2-4-8 サンプルハイツ205', $draft['address']);
         $this->assertSame('1990-04-01', $draft['birth_date']);
         $this->assertSame('female', $draft['gender']);
         $this->assertSame(['英語（TOEIC 850点）', '中国語（日常会話）'], $draft['languages'], 'duplicates are removed');
