@@ -1,5 +1,8 @@
 .git
 .env
+# Personal, git-ignored notes: never bake them into an image pushed to a registry.
+private
+TODO.md
 node_modules
 vendor
 public/build
