@@ -1,8 +1,8 @@
 """LLM extractor using an Azure OpenAI / Foundry deployment (e.g. gpt-6-luna).
 
 Uses the Responses API with a strict JSON-schema output format, so the reply is
-JSON shaped like our contract. As with the Claude extractor, Pydantic validates
-it again and the Laravel side sanitizes it a third time: LLM output is untrusted.
+JSON shaped like our contract. Pydantic validates it again and the Laravel side
+sanitizes it a third time: LLM output is untrusted.
 
 Call the *resource* endpoint (…/openai/v1/), not the Foundry project endpoint:
 gpt-6-luna has returned 500s on the project route (Azure/azure-sdk-for-python#49169).

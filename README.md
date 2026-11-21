@@ -18,7 +18,7 @@ AIの出力は信頼できない入力として扱い、必ず人が原本と見
 
 | 機能 | 内容 |
 | --- | --- |
-| AI抽出 | PDFアップロード → キューでジョブ実行 → 抽出サービス（ルールベース／Claude tool use）が構造化JSONを返す |
+| AI抽出 | PDFアップロード → キューでジョブ実行 → 抽出サービス（ルールベース／Azure OpenAI）が構造化JSONを返す |
 | 確認・修正画面 | 左に原本PDF、右に自動入力済みのフォーム。不正な項目は警告として表示し、人が修正してから確定 |
 | 精度の記録 | 確定時に、人がAIの下書きから修正した項目（`corrected_fields`）を記録 |
 | 採用ページ（公開） | ログイン不要の求人一覧・募集要項・応募フォーム（`/jobs`）。応募者が履歴書をアップロードするとフォームに自動入力され、**応募者本人が確認・修正してから送信**する。応募職種が付いた状態で書類選考に入る。個人情報の取り扱いへの同意必須、IPごとの回数制限あり |
@@ -40,7 +40,7 @@ flowchart LR
     L -->|ジョブ投入| Q[(Queue)]
     Q --> J[ExtractResumeJob]
     J -->|multipart + X-Internal-Token| X[Extractor<br/>Python / FastAPI]
-    X -->|mock または Claude| X
+    X -->|mock または Azure OpenAI| X
     J -->|検証・サニタイズ済みの下書き| DB[(DB)]
     U -->|確認・修正して登録| L
     L -->|候補者・職歴・監査ログ| DB
@@ -49,7 +49,7 @@ flowchart LR
 - **Laravel**：ドメインの中心。候補者・選考ステージ・権限・監査ログ・人による確認フローを担当。
 - **Extractor（`./extractor`）**：PDF → 構造化JSONだけを行うステートレスなマイクロサービス。ファイルや結果は保存しない。
   - `EXTRACTOR_PROVIDER=mock`：ルールベース抽出（APIキー不要。デモ・テスト用、LLMの比較用ベースライン）
-  - `EXTRACTOR_PROVIDER=claude`：Claudeのtool useでスキーマに沿ったJSONを出力
+  - `EXTRACTOR_PROVIDER=azure_openai`：Azure OpenAIのStructured Outputs（JSONスキーマ強制）でスキーマに沿ったJSONを出力
 - Laravel側は `ResumeExtractor` インターフェースにのみ依存しているため、抽出エンジンの差し替えはドメインコードに影響しません。
 
 ## データモデル
@@ -80,7 +80,7 @@ erDiagram
 1. **AIの出力は「信頼できない入力」として扱う**
    AIの抽出結果は直接候補者テーブルに書き込まず、必ず人が確認してから登録します（`ConfirmResume` が唯一の登録経路）。
 2. **検証を3層で行う**
-   Claudeのtool use（スキーマ強制）→ Pydantic → Laravelの `ExtractionResult`。
+   Azure OpenAIのStructured Outputs（スキーマ強制）→ Pydantic → Laravelの `ExtractionResult`。
    レスポンス全体の形式が壊れていれば失敗、**個別フィールド**（メール形式・年月など）が不正なら、そのフィールドだけ破棄して警告として画面に表示します。1項目の誤りで下書き全体を捨てないためです。
 3. **リトライすべき失敗とすべきでない失敗を分ける**
    タイムアウト・5xxは一時的な障害としてキューでリトライ。スキーマ違反や読めないPDFは同じ入力で同じ結果になるため即失敗にし、無駄なリトライ（とLLMのコスト）を避けます。
@@ -115,8 +115,6 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 EXTRACTOR_TOKEN=local-dev-token uvicorn app.main:app --port 8001
 ```
-
-Claudeで抽出する場合は、extractorを `EXTRACTOR_PROVIDER=claude ANTHROPIC_API_KEY=...` で起動してください。
 
 Azure OpenAI（Foundry）のデプロイ（例: gpt-6-luna）で抽出する場合：
 
@@ -186,13 +184,13 @@ CIはPRごとに2つのイメージ（`app` / `extractor`）をビルドし、`m
 
 **Why this problem.** Japanese resumes follow a loosely standard format, but layouts and wording vary from person to person, so HR staff end up re-typing them by hand. Fully automatic entry is too risky, so the design is an AI draft plus human review.
 
-**Stack:** Laravel 13 (PHP 8.3+), Blade + Tailwind CSS, queued jobs, SQLite (dev) · Python 3.12 / FastAPI extractor (rule-based mock, Claude tool use, or Azure OpenAI structured outputs) · PHPUnit, pytest · GitHub Actions · Docker Compose.
+**Stack:** Laravel 13 (PHP 8.3+), Blade + Tailwind CSS, queued jobs, SQLite (dev) · Python 3.12 / FastAPI extractor (rule-based mock or Azure OpenAI structured outputs) · PHPUnit, pytest · GitHub Actions · Docker Compose.
 
 **Key design decisions**
 
 - **LLM output is untrusted input.** Nothing extracted reaches the candidate tables without human confirmation: HR confirms drafts in `ConfirmResume`, and applicants confirm their own auto-filled drafts on the public form in `SubmitApplication`.
 - **Public careers pages** (`/jobs`, no login): open roles, job descriptions and an application form that auto-fills from an uploaded resume. Consent is required before any upload, uploads are rate limited per IP, and an applicant can only reach their own upload (its id lives in the session, never the URL).
-- **Three layers of validation** (forced tool schema → Pydantic → Laravel `ExtractionResult`). A broken envelope fails the job; a broken *field* is dropped and surfaced as a warning, so one bad value does not discard a useful draft.
+- **Three layers of validation** (strict JSON-schema output → Pydantic → Laravel `ExtractionResult`). A broken envelope fails the job; a broken *field* is dropped and surfaced as a warning, so one bad value does not discard a useful draft.
 - **Transient vs. permanent failures.** Timeouts/5xx are retried by the queue; contract violations fail fast to avoid pointless retries and LLM cost.
 - **Measurable AI quality.** Fields the reviewer corrected are logged (`corrected_fields`), giving a cheap accuracy signal per extractor.
 - **Personal data handling.** Private storage, policy-guarded file streaming, interviewers cannot see raw resumes, the extractor is stateless and never logs resume text, service-to-service token auth.

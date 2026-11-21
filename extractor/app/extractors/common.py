@@ -1,4 +1,4 @@
-"""Prompt and limits shared by the LLM-backed extractors (Claude, Azure OpenAI)."""
+"""Prompt and limits for the LLM-backed extractor (Azure OpenAI)."""
 
 from __future__ import annotations
 
