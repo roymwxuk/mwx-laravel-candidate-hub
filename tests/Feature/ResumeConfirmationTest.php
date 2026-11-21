@@ -56,6 +56,16 @@ class ResumeConfirmationTest extends TestCase
         $this->assertTrue(Candidate::sole()->position->is($position));
     }
 
+    public function test_the_register_button_is_above_and_below_the_fields(): void
+    {
+        $document = ResumeDocument::factory()->extracted()->create();
+
+        $this->actingAs(User::factory()->hr()->create())
+            ->get(route('resumes.show', $document))
+            ->assertOk()
+            ->assertSeeInOrder(['>候補者として登録</button>', '応募職種', '職歴', '>候補者として登録</button>', '</form>'], escape: false);
+    }
+
     public function test_hr_records_where_the_candidate_came_from(): void
     {
         $document = ResumeDocument::factory()->extracted()->create();

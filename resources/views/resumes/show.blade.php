@@ -80,6 +80,12 @@
 
                 <form method="POST" action="{{ route('resumes.confirm', $document) }}" class="space-y-5 rounded-lg border border-slate-200 bg-white p-5">
                     @csrf
+                    {{-- Same submit as the bottom button, so a reviewer who has checked the
+                         draft doesn't have to scroll past every field to register. --}}
+                    <div class="flex justify-end border-b border-slate-100 pb-4">
+                        <button class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">候補者として登録</button>
+                    </div>
+
                     <div>
                         <label for="field-position" class="block text-sm font-medium">応募職種</label>
                         <select id="field-position" name="position_id" class="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm">
