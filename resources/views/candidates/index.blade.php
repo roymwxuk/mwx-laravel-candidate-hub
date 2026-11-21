@@ -31,7 +31,7 @@
                         {{-- The link fills the whole cell (padding is on the <a>), so name, furigana and the gaps around them are all clickable. --}}
                         <td class="p-0">
                             <a href="{{ route('candidates.show', $candidate) }}" class="group block px-4 py-3 hover:bg-slate-50">
-                                <span class="font-medium text-slate-900 group-hover:underline">{{ $candidate->name }}</span>
+                                <span class="font-medium text-slate-900 group-hover:text-orange-600 group-hover:underline">{{ $candidate->name }}</span>
                                 @if ($candidate->name_kana)<span class="block text-xs text-slate-500">{{ $candidate->name_kana }}</span>@endif
                             </a>
                         </td>

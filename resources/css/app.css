@@ -12,6 +12,13 @@
     }
 }
 
+/* Text links turn orange on hover. Links styled as buttons, cards or table
+   rows set a background and keep their own hover style. Deliberately outside
+   any @layer so it wins over hover:text-* utilities on individual links. */
+a:not([class*='bg-']):hover {
+    color: var(--color-orange-600);
+}
+
 @theme {
     --font-sans: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic UI', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
