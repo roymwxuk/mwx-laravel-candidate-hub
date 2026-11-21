@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EducationLevel;
+use App\Enums\Gender;
 use App\Enums\Stage;
 use App\Exceptions\InvalidStageTransition;
 use Database\Factories\CandidateFactory;
@@ -16,11 +17,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 
-#[Fillable(['position_id', 'name', 'name_kana', 'email', 'phone', 'summary', 'skills', 'expected_salary', 'education_level', 'skill_years', 'stage', 'created_by'])]
+#[Fillable(['position_id', 'name', 'name_kana', 'email', 'phone', 'birth_date', 'gender', 'summary', 'skills', 'languages', 'expected_salary', 'desired_location', 'education_level', 'school_name', 'major', 'graduated_on', 'skill_years', 'stage', 'created_by', 'hr_note', 'referral_source'])]
 class Candidate extends Model
 {
     /** @use HasFactory<CandidateFactory> */
     use HasFactory;
+
+    /**
+     * Profile fields filled from a reviewed resume draft (HR review or public
+     * application), beyond the core name / contact / summary / skills.
+     */
+    public const PROFILE_FIELDS = [
+        'birth_date', 'gender', 'languages', 'education_level', 'school_name', 'major',
+        'graduated_on', 'expected_salary', 'desired_location',
+    ];
 
     /**
      * @return array<string, string>
@@ -29,6 +39,9 @@ class Candidate extends Model
     {
         return [
             'skills' => 'array',
+            'languages' => 'array',
+            'birth_date' => 'date',
+            'gender' => Gender::class,
             'expected_salary' => 'integer',
             'education_level' => EducationLevel::class,
             'skill_years' => 'array',

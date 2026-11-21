@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\CandidateHrNoteController;
 use App\Http\Controllers\CandidateInterviewerController;
+use App\Http\Controllers\CandidatePositionController;
 use App\Http\Controllers\CandidateStageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DemoResetController;
@@ -51,11 +53,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/resumes/{resume}/file', [ResumeDocumentController::class, 'file'])->name('resumes.file');
     Route::post('/resumes/{resume}/retry', [ResumeDocumentController::class, 'retry'])->name('resumes.retry');
     Route::post('/resumes/{resume}/confirm', [ResumeDocumentController::class, 'confirm'])->name('resumes.confirm');
+    Route::delete('/resumes/{resume}', [ResumeDocumentController::class, 'destroy'])->name('resumes.destroy');
 
     // Candidates & selection process
     Route::get('/candidates', [CandidateController::class, 'index'])->name('candidates.index');
     Route::get('/candidates/{candidate}', [CandidateController::class, 'show'])->name('candidates.show');
     Route::patch('/candidates/{candidate}/stage', [CandidateStageController::class, 'update'])->name('candidates.stage.update');
+    Route::patch('/candidates/{candidate}/position', [CandidatePositionController::class, 'update'])->name('candidates.position.update');
+    Route::patch('/candidates/{candidate}/hr-note', [CandidateHrNoteController::class, 'update'])->name('candidates.hr-note.update');
     Route::post('/candidates/{candidate}/interviewers', [CandidateInterviewerController::class, 'store'])->name('candidates.interviewers.store');
     Route::delete('/candidates/{candidate}/interviewers/{user}', [CandidateInterviewerController::class, 'destroy'])->name('candidates.interviewers.destroy');
 

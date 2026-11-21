@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Role;
 use App\Enums\Stage;
 use App\Models\Candidate;
+use App\Models\Position;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -48,7 +49,7 @@ class CandidateController extends Controller
     {
         Gate::authorize('view', $candidate);
 
-        $candidate->load('workHistories', 'interviewers', 'resumeDocument', 'auditLogs.user', 'creator');
+        $candidate->load('position:id,title', 'workHistories', 'interviewers', 'resumeDocument', 'auditLogs.user', 'creator');
 
         return view('candidates.show', [
             'candidate' => $candidate,
@@ -58,6 +59,9 @@ class CandidateController extends Controller
                     ->whereNotIn('id', $candidate->interviewers->modelKeys())
                     ->orderBy('name')
                     ->get()
+                : collect(),
+            'positions' => $request->user()->can('changePosition', $candidate)
+                ? Position::query()->orderBy('id')->get(['id', 'title'])
                 : collect(),
         ]);
     }

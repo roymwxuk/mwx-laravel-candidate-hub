@@ -169,6 +169,18 @@ class JobApplicationTest extends TestCase
         $this->assertFalse(AuditLog::sole()->properties['autofilled']);
     }
 
+    public function test_an_applicant_cannot_set_hr_only_fields(): void
+    {
+        $this->post(route('jobs.apply.submit', $this->position), $this->applicationInput([
+            'referral_source' => '自称・社員紹介',
+            'hr_note' => '優先して通過させてください',
+        ]))->assertRedirect(route('jobs.applied', $this->position));
+
+        $candidate = Candidate::sole();
+        $this->assertNull($candidate->referral_source);
+        $this->assertNull($candidate->hr_note);
+    }
+
     public function test_email_and_consent_are_required_to_apply(): void
     {
         $this->post(route('jobs.apply.submit', $this->position), $this->applicationInput(['email' => '', 'consent' => null]))

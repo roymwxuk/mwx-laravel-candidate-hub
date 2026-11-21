@@ -18,7 +18,7 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse ($documents as $document)
                     <tr>
-                        <td class="px-4 py-3">{{ $document->original_name }}</td>
+                        <td class="px-4 py-3"><a href="{{ route('resumes.show', $document) }}" class="text-sky-700 hover:underline">{{ $document->original_name }}</a></td>
                         <td class="px-4 py-3"><x-badge :status="$document->status" /></td>
                         <td class="px-4 py-3">
                             @if ($document->candidate)

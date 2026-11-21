@@ -13,23 +13,10 @@ import os
 from anthropic import Anthropic
 from pydantic import ValidationError
 
+from app.extractors.common import MAX_INPUT_CHARS, SYSTEM_PROMPT, ExtractionError, truncate
 from app.schemas import ExtractionResponse, ResumeFields
 
-MAX_INPUT_CHARS = 30_000
-
-SYSTEM_PROMPT = """あなたは日本の採用担当者のアシスタントです。
-履歴書・職務経歴書のテキストから、指定されたフィールドを抽出してください。
-
-ルール:
-- 書かれている情報だけを抽出し、推測で補完しないこと。見つからない項目は null にする。
-- 年月は YYYY-MM 形式に正規化する（例: 2018年2月 → 2018-02）。在職中の終了年月は null。
-- summary は職務要約を200文字以内で要約する。
-- 判断に迷った点は warnings に日本語で短く書く。
-"""
-
-
-class ExtractionError(RuntimeError):
-    """The model did not return usable structured output."""
+__all__ = ["MAX_INPUT_CHARS", "ClaudeExtractor", "ExtractionError"]
 
 
 class ClaudeExtractor:
@@ -45,10 +32,7 @@ class ClaudeExtractor:
         return cls(Anthropic(), os.getenv("ANTHROPIC_MODEL", "claude-haiku-5-5"))
 
     def extract(self, text: str) -> ExtractionResponse:
-        warnings: list[str] = []
-        if len(text) > MAX_INPUT_CHARS:
-            text = text[:MAX_INPUT_CHARS]
-            warnings.append("書類が長いため先頭部分のみ解析しました。")
+        text, warnings = truncate(text)
 
         tool_schema = ResumeFields.model_json_schema()
         tool_schema["properties"]["warnings"] = {"type": "array", "items": {"type": "string"}}

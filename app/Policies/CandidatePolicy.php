@@ -25,7 +25,30 @@ class CandidatePolicy
         return $user->canManageCandidates();
     }
 
+    public function changePosition(User $user, Candidate $candidate): bool
+    {
+        return $user->canManageCandidates();
+    }
+
     public function assignInterviewers(User $user, Candidate $candidate): bool
+    {
+        return $user->canManageCandidates();
+    }
+
+    /**
+     * Self-reported details that play no part in selection (性別). HR only:
+     * interviewers assess the candidate without them.
+     */
+    public function viewSensitiveDetails(User $user, Candidate $candidate): bool
+    {
+        return $user->canManageCandidates();
+    }
+
+    /**
+     * Viewing and editing the HR note (備考). HR only: it may hold sensitive
+     * personal information, so assigned interviewers do not see it.
+     */
+    public function editHrNote(User $user, Candidate $candidate): bool
     {
         return $user->canManageCandidates();
     }

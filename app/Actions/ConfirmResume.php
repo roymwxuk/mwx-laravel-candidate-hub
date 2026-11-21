@@ -10,6 +10,7 @@ use App\Models\ResumeDocument;
 use App\Models\User;
 use App\Services\ResumeExtraction\DraftCorrections;
 use DomainException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -39,14 +40,17 @@ class ConfirmResume
 
             $candidate = Candidate::create([
                 'position_id' => $data['position_id'] ?? null,
+                'referral_source' => $data['referral_source'] ?? null,
                 'name' => $data['name'],
                 'name_kana' => $data['name_kana'] ?? null,
                 'email' => $data['email'] ?? null,
                 'phone' => $data['phone'] ?? null,
                 'summary' => $data['summary'] ?? null,
                 'skills' => $data['skills'] ?? [],
+                ...Arr::only($data, Candidate::PROFILE_FIELDS),
                 'stage' => Stage::DocumentScreening,
                 'created_by' => $reviewer->getKey(),
+                'hr_note' => $data['hr_note'] ?? null,
             ]);
 
             foreach ($histories as $i => $history) {

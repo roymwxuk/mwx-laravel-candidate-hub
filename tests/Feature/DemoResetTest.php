@@ -96,6 +96,6 @@ class DemoResetTest extends TestCase
     {
         $this->actingAs(User::query()->where('email', 'hr@example.com')->sole())
             ->get(route('dashboard'))
-            ->assertSee('デモデータをリセット');
+            ->assertSee('[DEMO] デモデータをリセット');
     }
 }

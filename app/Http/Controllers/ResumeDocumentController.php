@@ -8,11 +8,13 @@ use App\Exceptions\InvalidResumeTransition;
 use App\Http\Requests\ConfirmResumeRequest;
 use App\Http\Requests\StoreResumeRequest;
 use App\Jobs\ExtractResumeJob;
+use App\Models\AuditLog;
 use App\Models\Position;
 use App\Models\ResumeDocument;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -98,6 +100,28 @@ class ResumeDocumentController extends Controller
         ExtractResumeJob::dispatch($resume);
 
         return redirect()->route('resumes.show', $resume)->with('status', '再解析を開始しました。');
+    }
+
+    /**
+     * Deletes the record and the stored PDF. The file goes only after the row is
+     * gone, so a failed delete never leaves a record pointing at a missing file.
+     */
+    public function destroy(Request $request, ResumeDocument $resume): RedirectResponse
+    {
+        Gate::authorize('delete', $resume);
+
+        DB::transaction(function () use ($resume, $request) {
+            $resume->delete();
+            // No candidate to attach it to; the file name is left out as it often holds the person's name.
+            AuditLog::record('resume.deleted', null, $request->user(), [
+                'resume_document_id' => $resume->getKey(),
+                'status' => $resume->status->value,
+            ]);
+        });
+
+        Storage::disk('local')->delete($resume->path);
+
+        return redirect()->route('resumes.index')->with('status', '履歴書を削除しました。');
     }
 
     public function confirm(ConfirmResumeRequest $request, ResumeDocument $resume, ConfirmResume $action): RedirectResponse

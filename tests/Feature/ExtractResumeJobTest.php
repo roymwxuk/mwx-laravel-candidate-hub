@@ -58,6 +58,64 @@ class ExtractResumeJobTest extends TestCase
         ];
     }
 
+    public function test_profile_fields_are_kept_when_valid(): void
+    {
+        Http::fake(['extractor.test/*' => Http::response($this->payload([
+            'birth_date' => '1990-04-01',
+            'gender' => 'female',
+            'languages' => ['英語（TOEIC 850点）', '中国語（日常会話）', '英語（TOEIC 850点）'],
+            'education_level' => 'bachelor',
+            'school_name' => '架空大学',
+            'major' => '工学部 情報工学科',
+            'graduated_on' => '2013-03',
+            'expected_salary' => 650,
+            'desired_location' => '東京都、リモート可',
+        ]))]);
+
+        ExtractResumeJob::dispatchSync($this->document);
+
+        $draft = $this->document->fresh()->extracted_data;
+        $this->assertSame('1990-04-01', $draft['birth_date']);
+        $this->assertSame('female', $draft['gender']);
+        $this->assertSame(['英語（TOEIC 850点）', '中国語（日常会話）'], $draft['languages'], 'duplicates are removed');
+        $this->assertSame('bachelor', $draft['education_level']);
+        $this->assertSame('架空大学', $draft['school_name']);
+        $this->assertSame('工学部 情報工学科', $draft['major']);
+        $this->assertSame('2013-03', $draft['graduated_on']);
+        $this->assertSame(650, $draft['expected_salary']);
+        $this->assertSame('東京都、リモート可', $draft['desired_location']);
+    }
+
+    public function test_invalid_profile_fields_are_dropped_with_a_warning(): void
+    {
+        Http::fake(['extractor.test/*' => Http::response($this->payload([
+            'birth_date' => '2999-01-01',
+            'gender' => 'm',
+            'education_level' => 'kindergarten',
+            'graduated_on' => '2013年3月',
+            'expected_salary' => 6_500_000, // yen, not 万円
+            'languages' => 'English',
+        ]))]);
+
+        ExtractResumeJob::dispatchSync($this->document);
+
+        $document = $this->document->fresh();
+        $this->assertSame(ResumeStatus::Extracted, $document->status, 'one bad field does not discard the draft');
+        $draft = $document->extracted_data;
+        $this->assertNull($draft['birth_date']);
+        $this->assertNull($draft['gender']);
+        $this->assertNull($draft['education_level']);
+        $this->assertNull($draft['graduated_on']);
+        $this->assertNull($draft['expected_salary']);
+        $this->assertSame([], $draft['languages']);
+        $this->assertSame('山田 太郎', $draft['name']);
+
+        $warnings = implode("\n", $document->warnings);
+        foreach (['生年月日', '性別', '最終学歴', '卒業年月', '希望年収', 'languages'] as $label) {
+            $this->assertStringContainsString($label, $warnings);
+        }
+    }
+
     public function test_a_valid_response_becomes_a_draft_awaiting_review(): void
     {
         Http::fake(['extractor.test/*' => Http::response($this->payload())]);

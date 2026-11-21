@@ -12,6 +12,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git unzip libzip-dev \
     && docker-php-ext-install zip pcntl \
     && rm -rf /var/lib/apt/lists/*
+# PHP's defaults (2M per file) are below the app's 5MB resume limit; without this,
+# 2–5MB PDFs are dropped before validation and fail with a vague "upload failed".
+RUN printf "upload_max_filesize=6M\npost_max_size=8M\n" > /usr/local/etc/php/conf.d/uploads.ini
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app

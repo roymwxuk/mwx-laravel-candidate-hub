@@ -5,7 +5,7 @@
         @if (config('app.demo_mode') && auth()->user()->canManageCandidates())
             <form method="POST" action="{{ route('demo.reset') }}" onsubmit="return confirm('すべてのデータを削除し、デモの初期状態に戻します。よろしいですか？');">
                 @csrf
-                <button type="submit" class="rounded-md border border-rose-300 bg-white px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-50">デモデータをリセット</button>
+                <button type="submit" class="rounded-md border border-rose-300 bg-white px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-50">[DEMO] デモデータをリセット</button>
             </form>
         @endif
     </div>

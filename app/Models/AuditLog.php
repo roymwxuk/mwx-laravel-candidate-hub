@@ -70,6 +70,12 @@ class AuditLog extends Model
                 Stage::tryFrom($p['from'] ?? '')?->label() ?? '?',
                 Stage::tryFrom($p['to'] ?? '')?->label() ?? '?',
             ),
+            'position.changed' => sprintf(
+                '応募職種を「%s」から「%s」に変更しました',
+                $p['from'] ?? '未設定',
+                $p['to'] ?? '未設定',
+            ),
+            'hr_note.updated' => ($p['cleared'] ?? false) ? '備考を削除しました' : '備考を更新しました',
             'interviewer.assigned' => sprintf('面接官「%s」をアサインしました', $p['interviewer_name'] ?? '?'),
             'interviewer.removed' => sprintf('面接官「%s」のアサインを解除しました', $p['interviewer_name'] ?? '?'),
             default => $this->action,

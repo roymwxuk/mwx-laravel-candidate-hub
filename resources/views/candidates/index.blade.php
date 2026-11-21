@@ -28,9 +28,12 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse ($candidates as $candidate)
                     <tr>
-                        <td class="px-4 py-3">
-                            <a href="{{ route('candidates.show', $candidate) }}" class="font-medium text-slate-900 hover:underline">{{ $candidate->name }}</a>
-                            @if ($candidate->name_kana)<div class="text-xs text-slate-500">{{ $candidate->name_kana }}</div>@endif
+                        {{-- The link fills the whole cell (padding is on the <a>), so name, furigana and the gaps around them are all clickable. --}}
+                        <td class="p-0">
+                            <a href="{{ route('candidates.show', $candidate) }}" class="group block px-4 py-3 hover:bg-slate-50">
+                                <span class="font-medium text-slate-900 group-hover:underline">{{ $candidate->name }}</span>
+                                @if ($candidate->name_kana)<span class="block text-xs text-slate-500">{{ $candidate->name_kana }}</span>@endif
+                            </a>
                         </td>
                         <td class="px-4 py-3 text-slate-600">{{ $candidate->position?->title ?? '未設定' }}</td>
                         <td class="px-4 py-3"><x-badge :status="$candidate->stage" /></td>

@@ -1,5 +1,6 @@
 <x-layout title="ログイン">
     <div class="mx-auto mt-16 max-w-sm">
+        <img src="{{ asset('logo-mwx.png') }}" alt="" class="mx-auto mb-3 h-14 w-14 rounded-lg">
         <h1 class="mb-1 text-center text-2xl font-semibold text-slate-900">Candidate Hub</h1>
         <p class="mb-8 text-center text-sm text-slate-500">AI履歴書取込・採用管理</p>
 

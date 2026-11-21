@@ -145,6 +145,15 @@ if (histograms.length > 0 || document.querySelector('[data-skill-select]')) {
     });
 }
 
+// Destructive actions: <form data-confirm="message"> asks before submitting.
+document.querySelectorAll('form[data-confirm]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (!window.confirm(form.dataset.confirm)) {
+            event.preventDefault();
+        }
+    });
+});
+
 // Stage changes that need a second look (e.g. reopening a rejected candidate).
 document.querySelectorAll('form[data-confirm-stage]').forEach((form) => {
     form.addEventListener('submit', (event) => {

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ResumeDocument;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -27,5 +28,15 @@ class ResumeIntakeVisibilityTest extends TestCase
             ->assertOk()
             ->assertDontSee('履歴書取込')
             ->assertDontSee('確認待ちの履歴書');
+    }
+
+    public function test_the_file_name_in_the_intake_list_links_to_the_review_page(): void
+    {
+        $document = ResumeDocument::factory()->create(['original_name' => '架空太郎_履歴書.pdf']);
+
+        $this->actingAs(User::factory()->hr()->create())
+            ->get(route('resumes.index'))
+            ->assertOk()
+            ->assertSee('<a href="'.route('resumes.show', $document).'" class="text-sky-700 hover:underline">架空太郎_履歴書.pdf</a>', false);
     }
 }

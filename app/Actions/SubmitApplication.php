@@ -11,6 +11,7 @@ use App\Models\Position;
 use App\Models\ResumeDocument;
 use App\Services\ResumeExtraction\DraftCorrections;
 use DomainException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -50,6 +51,7 @@ class SubmitApplication
                 'phone' => $data['phone'] ?? null,
                 'summary' => $data['summary'] ?? null,
                 'skills' => $data['skills'] ?? [],
+                ...Arr::only($data, Candidate::PROFILE_FIELDS),
                 'stage' => Stage::DocumentScreening,
                 'created_by' => null, // the applicant has no account
             ]);

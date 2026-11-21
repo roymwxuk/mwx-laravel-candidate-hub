@@ -118,6 +118,18 @@ EXTRACTOR_TOKEN=local-dev-token uvicorn app.main:app --port 8001
 
 Claudeで抽出する場合は、extractorを `EXTRACTOR_PROVIDER=claude ANTHROPIC_API_KEY=...` で起動してください。
 
+Azure OpenAI（Foundry）のデプロイ（例: gpt-6-luna）で抽出する場合：
+
+```bash
+EXTRACTOR_PROVIDER=azure_openai \
+AZURE_OPENAI_ENDPOINT=https://<resource>.cognitiveservices.azure.com/ \
+AZURE_OPENAI_API_KEY=... \
+AZURE_OPENAI_DEPLOYMENT=gpt-6-luna \
+uvicorn app.main:app --port 8001
+```
+
+エンドポイントはFoundryの**プロジェクト**ではなく**リソース**のURLを指定してください（プロジェクト経由ではgpt-6-lunaが500を返す既知の問題があります）。
+
 ### デモアカウント（パスワードはすべて `password`）
 
 | メール | 権限 |
@@ -163,7 +175,7 @@ cd extractor && pytest                # Extractor
 
 **Why this problem.** Japanese resumes follow a loosely standard format, but layouts and wording vary from person to person, so HR staff end up re-typing them by hand. Fully automatic entry is too risky, so the design is an AI draft plus human review.
 
-**Stack:** Laravel 13 (PHP 8.3+), Blade + Tailwind CSS, queued jobs, SQLite (dev) · Python 3.12 / FastAPI extractor (rule-based mock or Claude tool use) · PHPUnit, pytest · GitHub Actions · Docker Compose.
+**Stack:** Laravel 13 (PHP 8.3+), Blade + Tailwind CSS, queued jobs, SQLite (dev) · Python 3.12 / FastAPI extractor (rule-based mock, Claude tool use, or Azure OpenAI structured outputs) · PHPUnit, pytest · GitHub Actions · Docker Compose.
 
 **Key design decisions**
 

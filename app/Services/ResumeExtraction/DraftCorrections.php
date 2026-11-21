@@ -19,14 +19,22 @@ final class DraftCorrections
     {
         $changed = [];
 
-        foreach (['name', 'name_kana', 'email', 'phone', 'summary'] as $key) {
-            if (($draft[$key] ?? null) !== (($final[$key] ?? null) ?: null)) {
+        $scalars = ['name', 'name_kana', 'email', 'phone', 'birth_date', 'gender', 'summary', 'education_level', 'school_name', 'major', 'graduated_on', 'expected_salary', 'desired_location'];
+
+        foreach ($scalars as $key) {
+            // Form input arrives as strings ("600"), the draft may hold an int (600).
+            $before = ($draft[$key] ?? null) ?: null;
+            $after = ($final[$key] ?? null) ?: null;
+
+            if (($before === null ? null : (string) $before) !== ($after === null ? null : (string) $after)) {
                 $changed[] = $key;
             }
         }
 
-        if (array_values($draft['skills'] ?? []) !== array_values($final['skills'] ?? [])) {
-            $changed[] = 'skills';
+        foreach (['skills', 'languages'] as $key) {
+            if (array_values($draft[$key] ?? []) !== array_values($final[$key] ?? [])) {
+                $changed[] = $key;
+            }
         }
 
         $normalize = fn (array $rows) => array_map(

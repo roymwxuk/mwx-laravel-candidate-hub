@@ -13,13 +13,18 @@ class Extractor(Protocol):
 
 
 def build_extractor() -> Extractor:
-    """Pick the backend from EXTRACTOR_PROVIDER (mock | claude)."""
+    """Pick the backend from EXTRACTOR_PROVIDER (mock | claude | azure_openai)."""
     provider = os.getenv("EXTRACTOR_PROVIDER", "mock").lower()
 
     if provider == "claude":
         from app.extractors.claude import ClaudeExtractor
 
         return ClaudeExtractor.from_env()
+
+    if provider == "azure_openai":
+        from app.extractors.azure_openai import AzureOpenAIExtractor
+
+        return AzureOpenAIExtractor.from_env()
 
     from app.extractors.mock import RuleBasedExtractor
 

@@ -13,7 +13,10 @@
         <header class="border-b border-slate-200 bg-white">
             <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
                 <div class="flex items-center gap-6">
-                    <a href="{{ route('dashboard') }}" class="font-semibold text-slate-900">Candidate Hub</a>
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2 font-semibold text-slate-900">
+                        <img src="{{ asset('logo-mwx.png') }}" alt="" class="h-7 w-7 rounded">
+                        Candidate Hub
+                    </a>
                     <nav class="flex gap-4 text-sm">
                         <a href="{{ route('dashboard') }}" @class(['hover:text-slate-900', 'font-semibold text-slate-900' => request()->routeIs('dashboard'), 'text-slate-500' => ! request()->routeIs('dashboard')])>ダッシュボード</a>
                         @can('viewAny', App\Models\ResumeDocument::class)
@@ -40,7 +43,10 @@
         {{-- Visitors: the public careers pages (and the staff login). --}}
         <header class="border-b border-slate-200 bg-white">
             <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-                <a href="{{ route('jobs.index') }}" class="font-semibold text-slate-900">Candidate Hub <span class="font-normal text-slate-500">採用情報</span></a>
+                <a href="{{ route('jobs.index') }}" class="flex items-center gap-2 font-semibold text-slate-900">
+                    <img src="{{ asset('logo-mwx.png') }}" alt="" class="h-7 w-7 rounded">
+                    Candidate Hub <span class="font-normal text-slate-500">採用情報</span>
+                </a>
                 <a href="{{ route('login') }}" class="text-sm text-slate-500 hover:text-slate-900">社員ログイン</a>
             </div>
         </header>

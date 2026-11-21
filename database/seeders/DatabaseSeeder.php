@@ -23,16 +23,18 @@ class DatabaseSeeder extends Seeder
         $cto = $this->createCtoPosition();
 
         // CTO applicants: one per pipeline stage, so every badge colour shows.
-        // [name, kana, stage, 希望年収(万円), 最終学歴, skill => years]
+        // [name, kana, stage, 希望年収(万円), 最終学歴, skill => years, 生年月日?]
         $samples = [
             ['佐藤 健', 'さとう けん', Stage::DocumentScreening, 1200, EducationLevel::Bachelor, ['PHP' => 12, 'Laravel' => 9, 'MySQL' => 12]],
             ['鈴木 美咲', 'すずき みさき', Stage::FirstInterview, 1400, EducationLevel::Master, ['Go' => 8, 'AWS' => 10, 'Terraform' => 6]],
             ['高橋 翔', 'たかはし しょう', Stage::FinalInterview, 1300, EducationLevel::Bachelor, ['TypeScript' => 9, 'Next.js' => 6, 'Node.js' => 10]],
-            ['田中 優', 'たなか ゆう', Stage::Offer, 1600, EducationLevel::Doctorate, ['Python' => 14, 'FastAPI' => 5, 'LLM' => 3]],
+            ['田中 優', 'たなか ゆう', Stage::Offer, 1600, EducationLevel::Doctorate, ['Python' => 14, 'FastAPI' => 5, 'LLM' => 3], '1981-09-14'],
             ['伊藤 誠', 'いとう まこと', Stage::Rejected, 1100, EducationLevel::Bachelor, ['Java' => 18, 'Spring' => 15]],
         ];
 
-        foreach ($samples as [$name, $kana, $stage, $salary, $education, $skillYears]) {
+        foreach ($samples as $row) {
+            [$name, $kana, $stage, $salary, $education, $skillYears] = $row;
+
             $candidate = Candidate::factory()
                 ->hasWorkHistories(2)
                 ->create([
@@ -44,6 +46,7 @@ class DatabaseSeeder extends Seeder
                     'expected_salary' => $salary,
                     'education_level' => $education,
                     'skill_years' => $skillYears,
+                    'birth_date' => $row[6] ?? null,
                     'created_by' => $hr->id,
                 ]);
 
@@ -127,7 +130,7 @@ class DatabaseSeeder extends Seeder
         // [name, kana, stage, 希望年収(万円), 最終学歴, skill => years, [company, title, from, to|null]...]
         $applicants = [
             ['山本 大輔', 'やまもと だいすけ', Stage::DocumentScreening, 420, EducationLevel::Vocational, ['PHP' => 0.5, 'JavaScript' => 1, 'MySQL' => 0.5],
-                [['株式会社デモウェブ', 'Webエンジニア', '2024-04', null]]],
+                [['株式会社デモウェブ', 'Webエンジニア', '2024-04', null]], '専門学校 HAL東京'],
             ['中村 さくら', 'なかむら さくら', Stage::DocumentScreening, 480, EducationLevel::Bachelor, ['PHP' => 2, 'Laravel' => 1.5, 'MySQL' => 2, 'Vue.js' => 1],
                 [['株式会社サンプルソリューションズ', 'プログラマー', '2024-10', null]]],
             ['小林 拓也', 'こばやし たくや', Stage::Rejected, 500, EducationLevel::Bachelor, ['PHP' => 2.5, 'Laravel' => 2, 'Docker' => 1, 'MySQL' => 2.5],
@@ -207,11 +210,15 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * @param  list<array{string, string, Stage, int, EducationLevel, array<string, int|float>, list<array{string, string, string, string|null}>}>  $applicants
+     * Each row may carry an optional 8th element: the school name (最終学歴の学校名).
+     *
+     * @param  list<array{0: string, 1: string, 2: Stage, 3: int, 4: EducationLevel, 5: array<string, int|float>, 6: list<array{string, string, string, string|null}>, 7?: string}>  $applicants
      */
     private function seedApplicants(Position $position, User $hr, array $applicants, string $emailPrefix, string $summary, string $historyDescription): void
     {
-        foreach ($applicants as $i => [$name, $kana, $stage, $salary, $education, $skillYears, $histories]) {
+        foreach ($applicants as $i => $row) {
+            [$name, $kana, $stage, $salary, $education, $skillYears, $histories] = $row;
+
             $candidate = Candidate::create([
                 'position_id' => $position->id,
                 'name' => $name,
@@ -222,6 +229,7 @@ class DatabaseSeeder extends Seeder
                 'skills' => array_keys($skillYears),
                 'expected_salary' => $salary,
                 'education_level' => $education,
+                'school_name' => $row[7] ?? null,
                 'skill_years' => $skillYears,
                 'stage' => $stage,
                 'created_by' => $hr->id,

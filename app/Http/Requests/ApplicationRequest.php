@@ -21,7 +21,8 @@ class ApplicationRequest extends ConfirmResumeRequest
     public function rules(): array
     {
         $rules = parent::rules();
-        unset($rules['position_id']);
+        // HR-only fields: an applicant never sets the role, the source or the HR note.
+        unset($rules['position_id'], $rules['referral_source'], $rules['hr_note']);
 
         return [
             ...$rules,

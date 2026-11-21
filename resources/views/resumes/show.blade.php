@@ -12,7 +12,17 @@
                 @if ($document->extractor) ・ 抽出エンジン: <code>{{ $document->extractor }}</code> @endif
             </p>
         </div>
-        <x-badge :status="$document->status" class="text-sm" />
+        <div class="flex items-center gap-3">
+            <x-badge :status="$document->status" class="text-sm" />
+            @can('delete', $document)
+                <form method="POST" action="{{ route('resumes.destroy', $document) }}"
+                      data-confirm="「{{ $document->original_name }}」を削除します。アップロードしたPDFと抽出結果は元に戻せません。よろしいですか？">
+                    @csrf
+                    @method('DELETE')
+                    <button class="rounded-md border border-rose-300 bg-white px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-50">削除</button>
+                </form>
+            @endcan
+        </div>
     </div>
 
     @switch($document->status)
@@ -64,7 +74,9 @@
             @endif
 
             <div class="grid gap-6 lg:grid-cols-2">
-                <iframe src="{{ route('resumes.file', $document) }}" title="履歴書原本" class="h-[80vh] w-full rounded-lg border border-slate-200 bg-white"></iframe>
+                {{-- Sized from the width so a typical 2-page A4 resume shows in full: each page
+                     is 1:√2, plus the viewer's toolbar and page gaps. #view=FitH fits pages to the width. --}}
+                <iframe src="{{ route('resumes.file', $document) }}#view=FitH" title="履歴書原本" class="aspect-[1/3] min-h-[80vh] w-full rounded-lg border border-slate-200 bg-white"></iframe>
 
                 <form method="POST" action="{{ route('resumes.confirm', $document) }}" class="space-y-5 rounded-lg border border-slate-200 bg-white p-5">
                     @csrf
@@ -77,6 +89,20 @@
                             @endforeach
                         </select>
                         <x-field-error name="position_id" />
+                    </div>
+
+                    <div>
+                        <label for="field-referral-source" class="block text-sm font-medium">応募経路（経由・紹介）</label>
+                        <input id="field-referral-source" name="referral_source" list="referral-source-options" maxlength="100"
+                               value="{{ old('referral_source') }}" placeholder="例：LinkedIn、doda、社員紹介（山田）"
+                               class="mt-1 w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm">
+                        {{-- Suggestions only: HR can type anything. Picking from the list keeps spellings consistent. --}}
+                        <datalist id="referral-source-options">
+                            @foreach (['LinkedIn', 'doda', 'リクルートエージェント', 'ビズリーチ', 'Green', 'Wantedly', 'Findy', '社員紹介', '自社採用サイト'] as $option)
+                                <option value="{{ $option }}"></option>
+                            @endforeach
+                        </datalist>
+                        <x-field-error name="referral_source" />
                     </div>
 
                     <x-candidate-fields :draft="$draft" />
