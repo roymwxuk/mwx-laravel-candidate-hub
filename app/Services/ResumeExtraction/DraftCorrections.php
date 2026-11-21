@@ -19,7 +19,7 @@ final class DraftCorrections
     {
         $changed = [];
 
-        $scalars = ['name', 'name_kana', 'email', 'phone', 'birth_date', 'gender', 'summary', 'education_level', 'school_name', 'major', 'graduated_on', 'expected_salary', 'desired_location'];
+        $scalars = ['name', 'name_kana', 'email', 'phone', 'address', 'birth_date', 'gender', 'summary', 'education_level', 'school_name', 'major', 'graduated_on', 'expected_salary', 'desired_location'];
 
         foreach ($scalars as $key) {
             // Form input arrives as strings ("600"), the draft may hold an int (600).

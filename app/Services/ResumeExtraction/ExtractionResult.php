@@ -70,6 +70,7 @@ final class ExtractionResult
             'name_kana' => self::field($fields, 'name_kana', ['string', 'max:100'], $warnings),
             'email' => self::field($fields, 'email', ['string', 'email', 'max:255'], $warnings),
             'phone' => self::field($fields, 'phone', ['string', 'regex:/^[0-9+\-() ]{6,20}$/'], $warnings),
+            'address' => self::field($fields, 'address', ['string', 'max:255'], $warnings, '住所'),
             'birth_date' => self::field($fields, 'birth_date', ['string', 'date_format:Y-m-d', 'after:1900-01-01', 'before:today'], $warnings, '生年月日'),
             'gender' => self::field($fields, 'gender', ['string', Rule::enum(Gender::class)], $warnings, '性別'),
             'summary' => self::field($fields, 'summary', ['string', 'max:2000'], $warnings),

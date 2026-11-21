@@ -20,6 +20,7 @@
                     <dt class="text-slate-500">生年月日</dt>
                     <dd>{{ $candidate->birth_date ? $candidate->birth_date->format('Y-m-d').'（'.$candidate->birth_date->age.'歳）' : '—' }}</dd>
                     @can('viewSensitiveDetails', $candidate)
+                        <dt class="text-slate-500">住所</dt><dd>{{ $candidate->address ?? '—' }}</dd>
                         <dt class="text-slate-500">性別</dt><dd>{{ $candidate->gender?->label() ?? '未記入' }}</dd>
                     @endcan
                     <dt class="text-slate-500">最終学歴</dt>

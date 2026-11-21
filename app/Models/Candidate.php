@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 
-#[Fillable(['position_id', 'name', 'name_kana', 'email', 'phone', 'birth_date', 'gender', 'summary', 'skills', 'languages', 'expected_salary', 'desired_location', 'education_level', 'school_name', 'major', 'graduated_on', 'skill_years', 'stage', 'created_by', 'hr_note', 'referral_source'])]
+#[Fillable(['position_id', 'name', 'name_kana', 'email', 'phone', 'address', 'birth_date', 'gender', 'summary', 'skills', 'languages', 'expected_salary', 'desired_location', 'education_level', 'school_name', 'major', 'graduated_on', 'skill_years', 'stage', 'created_by', 'hr_note', 'referral_source'])]
 class Candidate extends Model
 {
     /** @use HasFactory<CandidateFactory> */
@@ -28,7 +28,7 @@ class Candidate extends Model
      * application), beyond the core name / contact / summary / skills.
      */
     public const PROFILE_FIELDS = [
-        'birth_date', 'gender', 'languages', 'education_level', 'school_name', 'major',
+        'address', 'birth_date', 'gender', 'languages', 'education_level', 'school_name', 'major',
         'graduated_on', 'expected_salary', 'desired_location',
     ];
 

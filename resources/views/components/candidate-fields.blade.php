@@ -47,6 +47,11 @@
         </select>
         <x-field-error name="gender" />
     </div>
+    <div class="sm:col-span-2">
+        <label for="field-address" class="block text-sm font-medium">住所</label>
+        <input id="field-address" name="address" value="{{ old('address', $draft['address'] ?? '') }}" maxlength="255" class="{{ $input }}" autocomplete="street-address" placeholder="例：東京都千代田区丸の内1-2-3 サンプルビル101">
+        <x-field-error name="address" />
+    </div>
 </div>
 
 <div>

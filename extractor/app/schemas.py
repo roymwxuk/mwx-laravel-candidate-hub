@@ -29,6 +29,10 @@ class ResumeFields(BaseModel):
     name_kana: str | None = Field(default=None, description="ふりがな")
     email: str | None = None
     phone: str | None = None
+    address: str | None = Field(
+        default=None,
+        description="現住所（都道府県から建物名・部屋番号まで）。郵便番号とフリガナは含めない",
+    )
     birth_date: str | None = Field(default=None, description="生年月日 (YYYY-MM-DD)")
     gender: Gender | None = Field(
         default=None,
