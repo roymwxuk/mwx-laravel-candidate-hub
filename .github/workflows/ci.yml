@@ -85,3 +85,50 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose down -v
+
+  # Builds both images on every PR (catches Dockerfile breakage before merge) and,
+  # on master only, pushes them to ECR. AWS access is via GitHub OIDC: no stored keys.
+  # Pushing is skipped (build only) until the repo variables AWS_ROLE_ARN and
+  # AWS_REGION are set; see "Container images (ECR)" in the README.
+  images:
+    name: Image (${{ matrix.image.name }})
+    runs-on: ubuntu-latest
+    needs: [laravel, extractor, docker]
+    permissions:
+      contents: read
+      id-token: write # OIDC token for aws-actions/configure-aws-credentials
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - { name: app, context: ., repository: mwx-candidate-hub-app }
+          - { name: extractor, context: extractor, repository: mwx-candidate-hub-extractor }
+    env:
+      PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && vars.AWS_ROLE_ARN != '' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        if: env.PUSH == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Log in to ECR
+        if: env.PUSH == 'true'
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build${{ env.PUSH == 'true' && ' and push' || '' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.image.context }}
+          push: ${{ env.PUSH == 'true' }}
+          tags: |
+            ${{ steps.ecr.outputs.registry || 'local' }}/${{ matrix.image.repository }}:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry || 'local' }}/${{ matrix.image.repository }}:latest
+          cache-from: type=gha,scope=${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}

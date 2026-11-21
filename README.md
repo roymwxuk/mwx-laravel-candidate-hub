@@ -151,7 +151,18 @@ cd extractor && pytest                # Extractor
 
 - 抽出サービスは `Http::fake()` でHTTP層をフェイクし、実際の `HttpResumeExtractor` とサニタイズ処理をテストしています。
 - `ExtractorContractTest` は実際のExtractorを起動してLaravel ↔ Python間の契約を検証します（CIでは自動実行、ローカルでは `EXTRACTOR_INTEGRATION_URL` を設定した場合のみ）。
-- CI（GitHub Actions）：Laravelテスト（PHP 8.3 / 8.4）、Extractorテスト、Docker Composeのスモークテスト。
+- CI（GitHub Actions）：Laravelテスト（PHP 8.3 / 8.4）、Extractorテスト、Docker Composeのスモークテスト、コンテナイメージのビルド。
+
+## コンテナイメージ（ECR）
+
+CIはPRごとに2つのイメージ（`app` / `extractor`）をビルドし、`master` へのマージ時にAmazon ECRへプッシュします（タグはコミットSHAと `latest`）。認証はGitHub OIDCで、アクセスキーは保存しません。
+
+リポジトリ変数 `AWS_ROLE_ARN` が未設定の間はビルドのみ行います。プッシュを有効にするには：
+
+1. ECRリポジトリ `mwx-candidate-hub-app` と `mwx-candidate-hub-extractor` を作成
+2. IAMにGitHubのOIDCプロバイダ（`token.actions.githubusercontent.com`）を追加
+3. IAMロールを作成：信頼ポリシーは `repo:<owner>/<repo>:ref:refs/heads/master` のみ許可、権限は `ecr:GetAuthorizationToken` と上記2リポジトリへのプッシュのみ
+4. GitHubのリポジトリ変数に `AWS_ROLE_ARN`（ロールのARN）と `AWS_REGION`（例：`us-west-2`）を設定
 
 ## 今後の改善案
 
