@@ -207,6 +207,7 @@ Built in 3 days in November 2026 while learning Laravel (my day-to-day stack is 
 - **Directing the AI**: giving it requirements and constraints, then accepting, revising or rejecting its proposals
 - **Verification**: checking by hand that each feature behaves as designed; implementation details are covered by tests (100+) and CI, including an end-to-end smoke test in Docker
 - **Improving it as a user**: working through the whole hiring process as if I were an HR staff member, from importing resumes to the final decision, and improving whatever was awkward or missing
+  - Example: the review form is long and its register button was only at the bottom, so I added a 候補者として登録 (register candidate) button at the top as well, letting HR register as soon as the draft matches the original. It cost almost nothing to build, but it makes a real difference to someone using the form every day
 
 **What Claude Code did**
 - Writing the implementation and the tests, and routine work such as views and configuration
