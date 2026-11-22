@@ -206,6 +206,7 @@ Built in 3 days in November 2026 while learning Laravel (my day-to-day stack is 
 - **Design decisions**: the data model, the "AI drafts, a person confirms" review flow, the three-layer validation strategy, separating retryable from non-retryable failures, the permission model and the handling of personal data (see "Design decisions" above)
 - **Directing the AI**: giving it requirements and constraints, then accepting, revising or rejecting its proposals
 - **Verification**: checking by hand that each feature behaves as designed; implementation details are covered by tests (100+) and CI, including an end-to-end smoke test in Docker
+- **Improving it as a user**: working through the whole hiring process as if I were an HR staff member, from importing resumes to the final decision, and improving whatever was awkward or missing
 
 **What Claude Code did**
 - Writing the implementation and the tests, and routine work such as views and configuration
