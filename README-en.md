@@ -58,7 +58,9 @@ flowchart LR
 
 ```mermaid
 erDiagram
-    users ||--o{ resume_documents : uploads
+    positions ||--o{ candidates : "applied for"
+    users ||--o{ resume_documents : "uploads / confirms"
+    users ||--o{ candidates : creates
     users }o--o{ candidates : "interviews (candidate_interviewer)"
     candidates ||--o{ work_histories : has
     candidates ||--o| resume_documents : "created from"
@@ -66,16 +68,26 @@ erDiagram
     users ||--o{ audit_logs : performs
 
     users { string role "admin / hr / interviewer" }
+    positions { string title }
     resume_documents {
+        string source "staff / application"
         string status "uploaded / processing / extracted / failed / confirmed"
         json extracted_data "sanitized draft"
         json warnings "items to review"
         json raw_response "raw extractor response (for audit)"
+        bigint confirmed_by FK "who confirmed the draft"
     }
-    candidates { string stage "document_screening ... offer / rejected" }
+    candidates {
+        bigint position_id FK "position applied for"
+        string stage "document_screening ... offer / rejected"
+    }
     work_histories { string started_on "YYYY-MM" }
     audit_logs { string action  json properties }
 ```
+
+- `resume_documents.source`: `staff` means HR uploaded it in 履歴書取込 (HR reviews the draft); `application` means an applicant uploaded it on the public careers page (the applicant reviews it).
+- On delete: deleting a candidate also deletes their work history, interviewer assignments and audit logs, and only unlinks their resume. Deleting a position or user sets the reference to `null`, so candidates and audit logs are kept.
+- The candidate's profile columns (address, education, preferences and so on, about 25) are left out of the diagram.
 
 ## Design decisions
 
@@ -90,6 +102,9 @@ erDiagram
    On confirmation, the fields the reviewer corrected from the AI draft (`corrected_fields`) go into the audit log, giving a cheap accuracy signal when comparing extraction engines.
 5. **Personal data handling**
    Resumes are stored on a private disk and served only through permission-checked routes. Interviewers cannot access originals. The extractor stores no files and never logs resume text, even in errors. Service-to-service calls authenticate with a shared token.
+   - A draft that has not been confirmed yet (awaiting review or parse failed) can be deleted; this removes the file as well as the database row. The audit log leaves out the file name, as it often contains the person's name.
+   - Gender is optional and self-reported only (blank allowed), as it is on the standard Japanese resume form.
+   - The HR note (備考) and referral source are internal only and cannot be set through the public application form.
 6. **Stage transitions are enforced in the domain**
    The `Stage` enum defines the allowed transitions, and `Candidate::transitionTo()` validates the move and writes the audit log in one transaction.
 7. **Year-months are stored as `YYYY-MM` strings**
@@ -101,6 +116,10 @@ erDiagram
    - State is managed by the `ResumeStatus` state machine (queued → processing → awaiting review / parse failed), so a duplicate job run cannot overwrite a draft that was already confirmed.
    - The demo uses the `database` queue driver (SQLite `jobs` table); it can be switched to Redis or SQS without code changes.
    - Note: `queue:work` keeps the code it booted with in memory, so run `php artisan queue:restart` after a deploy (use `queue:listen` during development).
+9. **PDF text is rebuilt from character positions**
+   Most Japanese resumes are forms and tables, and in many exported PDFs the printed labels (氏名, 性別, 会社名 …) and the typed values are separate layers. Reading in stream order puts every label first and every value at the end, so the LLM can no longer tell which value belongs to which label. `extractor/app/pdf.py` uses pdfplumber to rebuild lines from character coordinates instead, so each value stays on (or just below) the line of its label and each table row keeps its cells in column order.
+   - `layout=True` is not used: it also widens spaces inside values (架空 太郎 → 架空    太郎).
+   - NFKC normalization folds lookalike characters that some fonts emit (⽣年⽉⽇ → 生年月日, full-width digits).
 
 ## Setup
 
@@ -145,7 +164,7 @@ Use the Foundry **resource** URL as the endpoint, not the **project** URL (there
 | hr@example.com | HR |
 | interviewer@example.com | Interviewer (assigned to 2 candidates) |
 
-Sample resume (fictional person): `extractor/tests/fixtures/sample_resume.pdf`
+Samples (fictional people): `extractor/tests/fixtures/sample_resume.pdf` (履歴書) and `extractor/tests/fixtures/career_sheet.pdf` (a filled-in キャリアシート)
 
 Data added or changed during a demo can be reset with the "reset demo data" button on the dashboard (admin / HR only) or `php artisan demo:reset`. Only available when `DEMO_MODE=true`.
 
