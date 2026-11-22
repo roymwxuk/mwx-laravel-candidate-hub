@@ -199,5 +199,15 @@ Until the repository variable `AWS_ROLE_ARN` is set, CI only builds. To enable p
 
 ## AI usage
 
-Built in November 2026 while learning Laravel (my day-to-day stack is Node.js / Go).
-I used Claude Code for implementation, but made the design decisions myself (data model, review flow, validation strategy, permission design) and reviewed and tested all of the code.
+Built in 3 days in November 2026 while learning Laravel (my day-to-day stack is Node.js / Go).
+**Most of the code was written by Claude Code.** My role was deciding what to build and how, directing the AI, and judging and verifying what it produced.
+
+**What I did**
+- **Design decisions**: the data model, the "AI drafts, a person confirms" review flow, the three-layer validation strategy, separating retryable from non-retryable failures, the permission model and the handling of personal data (see "Design decisions" above)
+- **Directing the AI**: giving it requirements and constraints, then accepting, revising or rejecting its proposals
+- **Verification**: checking by hand that each feature behaves as designed; implementation details are covered by tests (100+) and CI, including an end-to-end smoke test in Docker
+
+**What Claude Code did**
+- Writing the implementation and the tests, and routine work such as views and configuration
+
+AI makes implementation much faster, but a person still has to decide what to automate, where a human must judge, and what should happen when things fail. Those decisions are the part of this repository I'd most like you to look at.
