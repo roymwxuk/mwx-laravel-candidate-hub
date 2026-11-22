@@ -56,7 +56,9 @@ flowchart LR
 
 ```mermaid
 erDiagram
-    users ||--o{ resume_documents : uploads
+    positions ||--o{ candidates : "applied for"
+    users ||--o{ resume_documents : "uploads / confirms"
+    users ||--o{ candidates : creates
     users }o--o{ candidates : "interviews (candidate_interviewer)"
     candidates ||--o{ work_histories : has
     candidates ||--o| resume_documents : "created from"
@@ -64,21 +66,31 @@ erDiagram
     users ||--o{ audit_logs : performs
 
     users { string role "admin / hr / interviewer" }
+    positions { string title }
     resume_documents {
+        string source "staff / application"
         string status "uploaded / processing / extracted / failed / confirmed"
         json extracted_data "サニタイズ済み下書き"
         json warnings "要確認事項"
         json raw_response "抽出サービスの生レスポンス（監査用）"
+        bigint confirmed_by FK "下書きを確定した人"
     }
-    candidates { string stage "document_screening ... offer / rejected" }
+    candidates {
+        bigint position_id FK "応募職種"
+        string stage "document_screening ... offer / rejected"
+    }
     work_histories { string started_on "YYYY-MM" }
     audit_logs { string action  json properties }
 ```
 
+- `resume_documents.source`：`staff` は人事が履歴書取込からアップロード（人事が確認）、`application` は応募者が採用ページからアップロード（応募者本人が確認）。
+- 削除時の扱い：候補者を削除すると職歴・面接官アサイン・監査ログも削除し、履歴書は紐付けだけを外します。職種やユーザーを削除した場合は参照を `null` にし、候補者と監査ログは残します。
+- 候補者のプロフィール項目（住所・学歴・希望条件など約25列）は図では省略しています。
+
 ## 設計上の判断
 
 1. **AIの出力は「信頼できない入力」として扱う**
-   AIの抽出結果は直接候補者テーブルに書き込まず、必ず人が確認してから登録します（`ConfirmResume` が唯一の登録経路）。
+   AIの抽出結果は直接候補者テーブルに書き込まず、必ず人が確認してから登録します。人事は `ConfirmResume`、応募者は採用ページの応募フォーム（`SubmitApplication`）で自分の下書きを確認します。採用ページでは応募者は自分のアップロードにしかアクセスできません（IDはURLではなくセッションに保持）。
 2. **検証を3層で行う**
    Azure OpenAIのStructured Outputs（スキーマ強制）→ Pydantic → Laravelの `ExtractionResult`。
    レスポンス全体の形式が壊れていれば失敗、**個別フィールド**（メール形式・年月など）が不正なら、そのフィールドだけ破棄して警告として画面に表示します。1項目の誤りで下書き全体を捨てないためです。
@@ -88,6 +100,9 @@ erDiagram
    登録時に、人がAIの下書きから修正した項目（`corrected_fields`）を監査ログに残します。抽出エンジンを変えたときの精度比較に使えます。
 5. **個人情報への配慮**
    履歴書はprivateディスクに保存し、権限チェック付きのルートからのみ配信。面接官は原本にアクセスできません。抽出サービスはファイルを保存せず、エラーログにも本文を出しません。サービス間通信は共有トークンで認証します。
+   - 確定前の下書き（確認待ち・解析失敗）は削除でき、DBの行だけでなくファイルも消します。監査ログにはファイル名を残しません（氏名が含まれることが多いため）。
+   - 性別は任意・自己申告のみ（未記入可）。履歴書の様式でも任意項目になっているためです。
+   - 備考（人事メモ）と応募経路は社内専用で、採用ページの応募フォームからは設定できません。
 6. **ステージ遷移はドメインで強制**
    `Stage` enum に許可される遷移を定義し、`Candidate::transitionTo()` が検証と監査ログ記録を同一トランザクションで行います。
 7. **年月は `YYYY-MM` 文字列で保存**
@@ -99,6 +114,10 @@ erDiagram
    - 状態は `ResumeStatus` のステートマシン（解析待ち → 解析中 → 確認待ち／解析失敗）で管理し、重複実行されたジョブが確認済みの下書きを上書きしないようにしています。
    - キューはデモ用に `database` ドライバ（SQLiteの `jobs` テーブル）を使用。コードを変えずにRedisやSQSへ切り替えられます。
    - 注意：`queue:work` は起動時のコードをメモリに保持するため、デプロイ後は `php artisan queue:restart` が必要です（開発中は `queue:listen` を推奨）。
+9. **PDFは文字の位置からテキストを再構成する**
+   日本の履歴書・職務経歴書の多くは表や書式で、出力されたPDFでは印字されたラベル（氏名・性別・会社名など）と入力された値が別レイヤーになっていることがあります。ストリーム順に読むとラベルがすべて先、値がすべて後ろに並び、LLMがどの値がどのラベルのものか判断できません。そこで `extractor/app/pdf.py` ではpdfplumberで文字の座標から行を組み立て、値をラベルと同じ行（または直下）に、表の各行をセルの列順に保ちます。
+   - `layout=True` は値の中の空白まで広げてしまう（架空 太郎 → 架空    太郎）ため使っていません。
+   - NFKC正規化で、一部のフォントが出力する似た別の文字（⽣年⽉⽇ → 生年月日、全角数字など）を揃えます。
 
 ## セットアップ
 
@@ -143,7 +162,7 @@ uvicorn app.main:app --port 8001
 | hr@example.com | 人事担当 |
 | interviewer@example.com | 面接官（2名の候補者にアサイン済み） |
 
-サンプル履歴書（架空の人物）：`extractor/tests/fixtures/sample_resume.pdf`
+サンプル（架空の人物）：`extractor/tests/fixtures/sample_resume.pdf`（履歴書）、`extractor/tests/fixtures/career_sheet.pdf`（記入済みキャリアシート）
 
 デモ中に追加・変更したデータは、ダッシュボードの「デモデータをリセット」ボタン（管理者・人事担当のみ）または `php artisan demo:reset` で初期状態に戻せます。`DEMO_MODE=true` のときだけ有効です。
 
