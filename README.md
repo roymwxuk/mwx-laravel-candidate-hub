@@ -4,7 +4,7 @@
 AIの出力は信頼できない入力として扱い、必ず人が原本と見比べて確認・修正してから登録します。
 登録されたデータは、そのまま採用選考のワークフロー（選考ステージ・面接官アサイン・監査ログ）に引き継がれます。
 
-[English below](#english)
+[English](README-en.md)
 
 ![CI](https://github.com/roymwxuk/mwx-laravel-candidate-hub/actions/workflows/ci.yml/badge.svg)
 
@@ -92,6 +92,13 @@ erDiagram
    `Stage` enum に許可される遷移を定義し、`Candidate::transitionTo()` が検証と監査ログ記録を同一トランザクションで行います。
 7. **年月は `YYYY-MM` 文字列で保存**
    履歴書の職歴は月単位の精度しかないため、存在しない「日」を作らないようにしています。
+8. **履歴書の解析はジョブキューで非同期に行う**
+   AIによる抽出は10〜60秒かかるため、アップロードのリクエスト内では実行しません。アップロード時は保存と `ExtractResumeJob` の投入だけを行ってすぐに応答し、キューワーカーが抽出サービスを呼び出します。画面は `resumes/{id}/status` をポーリングし、完了すると自動で更新されます。
+   - ブラウザのタイムアウトやWebプロセスの占有を防げ、抽出が遅い・落ちている場合でもアップロード自体は成功します。
+   - 一時的な障害は `--tries=3 --backoff=10` で自動リトライし、最終的に失敗したものは「解析失敗」として人が再解析できます（上記3）。
+   - 状態は `ResumeStatus` のステートマシン（解析待ち → 解析中 → 確認待ち／解析失敗）で管理し、重複実行されたジョブが確認済みの下書きを上書きしないようにしています。
+   - キューはデモ用に `database` ドライバ（SQLiteの `jobs` テーブル）を使用。コードを変えずにRedisやSQSへ切り替えられます。
+   - 注意：`queue:work` は起動時のコードをメモリに保持するため、デプロイ後は `php artisan queue:restart` が必要です（開発中は `queue:listen` を推奨）。
 
 ## セットアップ
 
@@ -173,29 +180,3 @@ CIはPRごとに2つのイメージ（`app` / `extractor`）をビルドし、`m
 
 本リポジトリは、Laravelの習得を兼ねて2026年11月に作成しました（普段の業務はNode.js / Go が中心です）。
 実装には Claude Code を活用しましたが、設計判断（データモデル、確認フロー、検証方針、権限設計）は自分で行い、コードはすべてレビュー・動作確認しています。
-
----
-
-<a id="english"></a>
-
-## English
-
-**Candidate Hub** is a Laravel app that uses an LLM to read semi-structured Japanese resumes (履歴書 / 職務経歴書, PDF) and auto-fill a resume form. The LLM output is treated as untrusted input: a person always checks the pre-filled form against the original PDF, corrects it, and only then confirms it. Confirmed data then flows into a recruiting workflow (selection stages, interviewer assignment, audit log).
-
-**Why this problem.** Japanese resumes follow a loosely standard format, but layouts and wording vary from person to person, so HR staff end up re-typing them by hand. Fully automatic entry is too risky, so the design is an AI draft plus human review.
-
-**Stack:** Laravel 13 (PHP 8.3+), Blade + Tailwind CSS, queued jobs, SQLite (dev) · Python 3.12 / FastAPI extractor (rule-based mock or Azure OpenAI structured outputs) · PHPUnit, pytest · GitHub Actions · Docker Compose.
-
-**Key design decisions**
-
-- **LLM output is untrusted input.** Nothing extracted reaches the candidate tables without human confirmation: HR confirms drafts in `ConfirmResume`, and applicants confirm their own auto-filled drafts on the public form in `SubmitApplication`.
-- **Public careers pages** (`/jobs`, no login): open roles, job descriptions and an application form that auto-fills from an uploaded resume. Consent is required before any upload, uploads are rate limited per IP, and an applicant can only reach their own upload (its id lives in the session, never the URL).
-- **Three layers of validation** (strict JSON-schema output → Pydantic → Laravel `ExtractionResult`). A broken envelope fails the job; a broken *field* is dropped and surfaced as a warning, so one bad value does not discard a useful draft.
-- **Transient vs. permanent failures.** Timeouts/5xx are retried by the queue; contract violations fail fast to avoid pointless retries and LLM cost.
-- **Measurable AI quality.** Fields the reviewer corrected are logged (`corrected_fields`), giving a cheap accuracy signal per extractor.
-- **Personal data handling.** Private storage, policy-guarded file streaming, interviewers cannot see raw resumes, the extractor is stateless and never logs resume text, service-to-service token auth.
-- **Domain-enforced stage transitions** via the `Stage` enum and `Candidate::transitionTo()` (validated + audited in one transaction).
-
-**Run it:** `docker compose up --build` → http://localhost:8000 (demo accounts above, password `password`). A "reset demo data" button on the dashboard (admin / HR, only when `DEMO_MODE=true`) or `php artisan demo:reset` restores the seeded state.
-
-**AI usage:** Built in November 2026 while learning Laravel (my day-to-day stack is Node.js / Go), with Claude Code as a coding assistant. I made the design decisions and reviewed and tested the code myself.
