@@ -1,13 +1,6 @@
 # Demo image for the Laravel app (php artisan serve + SQLite). Not a production setup.
 
-FROM node:22-alpine AS assets
-WORKDIR /app
-COPY package.json package-lock.json vite.config.js ./
-RUN npm ci --ignore-scripts --no-audit --no-fund
-COPY resources ./resources
-RUN npm run build
-
-FROM php:8.3-cli-bookworm
+FROM php:8.3-cli-bookworm AS base
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git unzip libzip-dev \
     && docker-php-ext-install zip pcntl \
@@ -21,6 +14,18 @@ WORKDIR /app
 COPY composer.json ./
 RUN composer install --no-scripts --no-autoloader --prefer-dist --no-interaction --no-progress
 
+FROM node:22-alpine AS assets
+WORKDIR /app
+COPY package.json package-lock.json vite.config.js ./
+RUN npm ci --ignore-scripts --no-audit --no-fund
+# Tailwind only generates the classes it can see, so it needs every place that has
+# them: the views, app/ (badge colours in the enums) and Laravel's pagination views.
+COPY resources ./resources
+COPY app ./app
+COPY --from=base /app/vendor/laravel/framework/src/Illuminate/Pagination/resources ./vendor/laravel/framework/src/Illuminate/Pagination/resources
+RUN npm run build
+
+FROM base
 COPY . .
 COPY --from=assets /app/public/build ./public/build
 RUN composer dump-autoload --optimize \
