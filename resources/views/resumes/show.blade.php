@@ -31,7 +31,7 @@
             <div class="rounded-lg border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900"
                  data-poll-url="{{ route('resumes.status', $document) }}" data-poll-status="{{ $document->status->value }}">
                 <p class="font-medium">AIが履歴書を解析しています…</p>
-                <p class="mt-1">完了すると自動で画面が更新されます。キューワーカー（<code>php artisan queue:work</code>）が起動していることを確認してください。</p>
+                <p class="mt-1">通常10〜60秒ほどで完了し、自動で画面が更新されます。</p>
             </div>
             @break
 
