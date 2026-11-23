@@ -1,6 +1,6 @@
 # Candidate Hub
 
-**Live demo:** <https://candidate-hub.demo.roymwxuk.uk/> ([demo accounts](#demo-accounts-password-is-demopassword56-for-all))
+**Live demo:** <https://candidate-hub.demo.roymwxuk.uk/> ([demo accounts](#demo-accounts-password-is-password-for-all))
 
 ![Demo: uploading a resume PDF and reviewing the AI draft](docs/demo.gif)
 
@@ -160,7 +160,7 @@ uvicorn app.main:app --port 8001
 
 Use the Foundry **resource** URL as the endpoint, not the **project** URL (there is a known issue where gpt-6-luna returns 500 through the project endpoint).
 
-### Demo accounts (password is `demopassword56` for all)
+### Demo accounts (password is `password` for all)
 
 | Email | Role |
 | --- | --- |

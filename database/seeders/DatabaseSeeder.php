@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Hash;
 class DatabaseSeeder extends Seeder
 {
     /** Shared by all demo accounts; also shown on the login page and in the READMEs. */
-    private const DEMO_PASSWORD = 'demopassword56';
+    private const DEMO_PASSWORD = 'password';
 
     public function run(): void
     {

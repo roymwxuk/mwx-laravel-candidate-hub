@@ -1,6 +1,6 @@
 # Candidate Hub
 
-**デモ：** <https://candidate-hub.demo.roymwxuk.uk/>（[デモアカウント](#デモアカウントパスワードはすべて-demopassword56)）
+**デモ：** <https://candidate-hub.demo.roymwxuk.uk/>（[デモアカウント](#デモアカウントパスワードはすべて-password)）
 
 ![履歴書PDFをアップロードし、AIの下書きを確認するデモ](docs/demo.gif)
 
@@ -158,7 +158,7 @@ uvicorn app.main:app --port 8001
 
 エンドポイントはFoundryの**プロジェクト**ではなく**リソース**のURLを指定してください（プロジェクト経由ではgpt-6-lunaが500を返す既知の問題があります）。
 
-### デモアカウント（パスワードはすべて `demopassword56`）
+### デモアカウント（パスワードはすべて `password`）
 
 | メール | 権限 |
 | --- | --- |
