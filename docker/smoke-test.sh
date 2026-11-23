@@ -21,7 +21,7 @@ echo "→ log in as HR"
 curl -sf -c "$JAR" -b "$JAR" -o /dev/null \
   --data-urlencode "_token=$(token)" \
   --data-urlencode "email=hr@example.com" \
-  --data-urlencode "password=password" \
+  --data-urlencode "password=demopassword56" \
   "$BASE/login"
 
 echo "→ upload sample resume"
