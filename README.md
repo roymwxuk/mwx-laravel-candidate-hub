@@ -179,14 +179,13 @@ cd extractor && pytest                # Extractor
 
 ## コンテナイメージ（ECR）
 
-CIはPRごとに2つのイメージ（`app` / `extractor`）をビルドし、`master` へのマージ時にAmazon ECRへプッシュします（タグはコミットSHAと `latest`）。認証はGitHub OIDCで、アクセスキーは保存しません。
+CIはPRごとに2つのイメージ（`app` / `extractor`）をビルドし、`master` へのプッシュ時に `982081071264.dkr.ecr.us-west-2.amazonaws.com/mwx-candidate-hub` に公開します。Laravelには `<コミットSHA>` と `latest`、extractorには `extractor-<コミットSHA>` と `extractor-latest` を付けます。認証にはGitHub OIDCを使用します。
 
 リポジトリ変数 `AWS_ROLE_ARN` が未設定の間はビルドのみ行います。プッシュを有効にするには：
 
-1. ECRリポジトリ `mwx-candidate-hub-app` と `mwx-candidate-hub-extractor` を作成
-2. IAMにGitHubのOIDCプロバイダ（`token.actions.githubusercontent.com`）を追加
-3. IAMロールを作成：信頼ポリシーは `repo:<owner>/<repo>:ref:refs/heads/master` のみ許可、権限は `ecr:GetAuthorizationToken` と上記2リポジトリへのプッシュのみ
-4. GitHubのリポジトリ変数に `AWS_ROLE_ARN`（ロールのARN）と `AWS_REGION`（例：`us-west-2`）を設定
+1. IAMにGitHubのOIDCプロバイダ（`token.actions.githubusercontent.com`）を追加
+2. IAMロールの信頼ポリシーで `repo:roymwxuk/mwx-laravel-candidate-hub:ref:refs/heads/master` を許可し、`ecr:GetAuthorizationToken` と `arn:aws:ecr:us-west-2:982081071264:repository/mwx-candidate-hub` へのプッシュ権限を付与
+3. GitHubのリポジトリ変数 `AWS_ROLE_ARN` にそのIAMロールのARNを設定
 
 ## 今後の改善案
 

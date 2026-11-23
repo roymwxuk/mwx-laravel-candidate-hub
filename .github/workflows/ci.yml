@@ -88,8 +88,7 @@ jobs:
 
   # Builds both images on every PR (catches Dockerfile breakage before merge) and,
   # on master only, pushes them to ECR. AWS access is via GitHub OIDC: no stored keys.
-  # Pushing is skipped (build only) until the repo variables AWS_ROLE_ARN and
-  # AWS_REGION are set; see "Container images (ECR)" in the README.
+  # Pushing is skipped (build only) until the repo variable AWS_ROLE_ARN is set.
   images:
     name: Image (${{ matrix.image.name }})
     runs-on: ubuntu-latest
@@ -101,10 +100,11 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - { name: app, context: ., repository: mwx-candidate-hub-app }
-          - { name: extractor, context: extractor, repository: mwx-candidate-hub-extractor }
+          - { name: app, context: ., tag_prefix: '' }
+          - { name: extractor, context: extractor, tag_prefix: 'extractor-' }
     env:
       PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && vars.AWS_ROLE_ARN != '' }}
+      ECR_REPOSITORY: mwx-candidate-hub
     steps:
       - uses: actions/checkout@v5
 
@@ -115,12 +115,14 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
+          aws-region: us-west-2
 
       - name: Log in to ECR
         if: env.PUSH == 'true'
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registries: '982081071264'
 
       - name: Build${{ env.PUSH == 'true' && ' and push' || '' }}
         uses: docker/build-push-action@v6
@@ -128,7 +130,7 @@ jobs:
           context: ${{ matrix.image.context }}
           push: ${{ env.PUSH == 'true' }}
           tags: |
-            ${{ steps.ecr.outputs.registry || 'local' }}/${{ matrix.image.repository }}:${{ github.sha }}
-            ${{ steps.ecr.outputs.registry || 'local' }}/${{ matrix.image.repository }}:latest
+            ${{ steps.ecr.outputs.registry || 'local' }}/${{ env.ECR_REPOSITORY }}:${{ matrix.image.tag_prefix }}${{ github.sha }}
+            ${{ steps.ecr.outputs.registry || 'local' }}/${{ env.ECR_REPOSITORY }}:${{ matrix.image.tag_prefix }}latest
           cache-from: type=gha,scope=${{ matrix.image.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}
