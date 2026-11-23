@@ -32,6 +32,8 @@ return [
         'url' => env('EXTRACTOR_URL', 'http://127.0.0.1:8001'),
         'timeout' => (int) env('EXTRACTOR_TIMEOUT', 60),
         'token' => env('EXTRACTOR_TOKEN'),
+        // Tell users on the upload page that extraction is rule-based, not AI.
+        'mock_notice' => (bool) env('EXTRACTOR_MOCK_NOTICE', false),
     ],
 
     'slack' => [
