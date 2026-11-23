@@ -8,6 +8,8 @@ Confirmed data then flows into a recruiting workflow (selection stages, intervie
 
 ![CI](https://github.com/roymwxuk/mwx-laravel-candidate-hub/actions/workflows/ci.yml/badge.svg)
 
+**Live demo:** <https://candidate-hub.demo.roymwxuk.uk/> ([demo accounts](#demo-accounts-password-is-demopassword56-for-all))
+
 ## Why this problem
 
 Japanese resumes follow a loosely standard format, but the order of sections and the wording vary from person to person. HR staff re-typing them by hand is a real cost in recruiting. Letting an AI register candidates fully automatically is too risky, because errors slip in, so the design is "the AI writes a draft, a person reviews and confirms it."
@@ -156,7 +158,7 @@ uvicorn app.main:app --port 8001
 
 Use the Foundry **resource** URL as the endpoint, not the **project** URL (there is a known issue where gpt-6-luna returns 500 through the project endpoint).
 
-### Demo accounts (password is `password` for all)
+### Demo accounts (password is `demopassword56` for all)
 
 | Email | Role |
 | --- | --- |

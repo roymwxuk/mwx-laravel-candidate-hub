@@ -12,11 +12,12 @@
     }
 }
 
-/* Text links turn orange on hover. Links styled as buttons, cards or table
+/* Text links turn orange on hover, without an underline. Links styled as buttons, cards or table
    rows set a background and keep their own hover style. Deliberately outside
    any @layer so it wins over hover:text-* utilities on individual links. */
 a:not([class*='bg-']):hover {
     color: var(--color-orange-600);
+    text-decoration: none;
 }
 
 @theme {

@@ -10,15 +10,21 @@ use App\Models\Candidate;
 use App\Models\Position;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
+    /** Shared by all demo accounts; also shown on the login page and in the READMEs. */
+    private const DEMO_PASSWORD = 'demopassword56';
+
     public function run(): void
     {
-        User::factory()->create(['name' => '管理 太郎', 'email' => 'admin@example.com', 'role' => Role::Admin]);
-        $hr = User::factory()->create(['name' => '人事 花子', 'email' => 'hr@example.com', 'role' => Role::Hr]);
-        $interviewer = User::factory()->create(['name' => '面接 一郎', 'email' => 'interviewer@example.com', 'role' => Role::Interviewer]);
-        User::factory()->create(['name' => '面接 次郎', 'email' => 'interviewer2@example.com', 'role' => Role::Interviewer]);
+        $password = Hash::make(self::DEMO_PASSWORD);
+
+        User::factory()->create(['name' => '管理 太郎', 'email' => 'admin@example.com', 'role' => Role::Admin, 'password' => $password]);
+        $hr = User::factory()->create(['name' => '人事 花子', 'email' => 'hr@example.com', 'role' => Role::Hr, 'password' => $password]);
+        $interviewer = User::factory()->create(['name' => '面接 一郎', 'email' => 'interviewer@example.com', 'role' => Role::Interviewer, 'password' => $password]);
+        User::factory()->create(['name' => '面接 次郎', 'email' => 'interviewer2@example.com', 'role' => Role::Interviewer, 'password' => $password]);
 
         $cto = $this->createCtoPosition();
 
