@@ -1,5 +1,7 @@
 # Candidate Hub
 
+![Demo: uploading a resume PDF and reviewing the AI draft](public/converted-video.gif)
+
 A Laravel app that uses an LLM to read semi-structured Japanese resumes (履歴書 / 職務経歴書, PDF) and auto-fill a resume form.
 The LLM output is treated as untrusted input: a person always checks the pre-filled form against the original PDF, corrects it, and only then confirms it.
 Confirmed data then flows into a recruiting workflow (selection stages, interviewer assignment, audit log).
