@@ -1,5 +1,7 @@
 # Candidate Hub
 
+**デモ：** <https://candidate-hub.demo.roymwxuk.uk/>（[デモアカウント](#デモアカウントパスワードはすべて-demopassword56)）
+
 ![履歴書PDFをアップロードし、AIの下書きを確認するデモ](docs/demo.gif)
 
 半構造化された日本語の履歴書・職務経歴書（PDF）をLLMで解析し、入力フォームを自動入力するLaravelアプリです。
@@ -9,8 +11,6 @@ AIの出力は信頼できない入力として扱い、必ず人が原本と見
 [English](README-en.md)
 
 ![CI](https://github.com/roymwxuk/mwx-laravel-candidate-hub/actions/workflows/ci.yml/badge.svg)
-
-**デモ：** <https://candidate-hub.demo.roymwxuk.uk/>（[デモアカウント](#デモアカウントパスワードはすべて-demopassword56)）
 
 ## なぜこのテーマか
 

@@ -1,5 +1,7 @@
 # Candidate Hub
 
+**Live demo:** <https://candidate-hub.demo.roymwxuk.uk/> ([demo accounts](#demo-accounts-password-is-demopassword56-for-all))
+
 ![Demo: uploading a resume PDF and reviewing the AI draft](docs/demo.gif)
 
 A Laravel app that uses an LLM to read semi-structured Japanese resumes (履歴書 / 職務経歴書, PDF) and auto-fill a resume form.
@@ -9,8 +11,6 @@ Confirmed data then flows into a recruiting workflow (selection stages, intervie
 [日本語](README.md)
 
 ![CI](https://github.com/roymwxuk/mwx-laravel-candidate-hub/actions/workflows/ci.yml/badge.svg)
-
-**Live demo:** <https://candidate-hub.demo.roymwxuk.uk/> ([demo accounts](#demo-accounts-password-is-demopassword56-for-all))
 
 ## Why this problem
 
