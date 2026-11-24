@@ -1,0 +1,18 @@
+{
+  "_source": "../../tests/fixtures/sample_resume.pdf",
+  "name": "架空 太郎",
+  "name_kana": "かくう たろう",
+  "email": "kakuu.taro@example.com",
+  "phone": "090-1234-5678",
+  "address": null,
+  "birth_date": null,
+  "gender": null,
+  "education_level": null,
+  "expected_salary": null,
+  "skills": ["PHP", "Laravel", "MySQL", "Docker", "AWS"],
+  "languages": [],
+  "work_histories": [
+    {"company": "株式会社サンプルシステムズ", "started_on": "2016-04", "ended_on": "2019-09"},
+    {"company": "合同会社テックデモ", "started_on": "2019-10", "ended_on": null}
+  ]
+}

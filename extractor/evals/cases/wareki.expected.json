@@ -1,0 +1,16 @@
+{
+  "name": "見本 一郎",
+  "name_kana": "みほん いちろう",
+  "birth_date": "1988-11-03",
+  "gender": "male",
+  "address": "大阪府見本市架空町1-2-3",
+  "education_level": "bachelor",
+  "school_name": "見本大学",
+  "graduated_on": "2011-03",
+  "expected_salary": 550,
+  "desired_location": "大阪府",
+  "work_histories": [
+    {"company": "株式会社架空商事", "started_on": "2011-04", "ended_on": "2019-03"},
+    {"company": "見本物流株式会社", "started_on": "2019-06", "ended_on": null}
+  ]
+}

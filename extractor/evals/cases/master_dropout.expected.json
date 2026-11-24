@@ -1,0 +1,17 @@
+{
+  "name": "架空 次郎",
+  "name_kana": "かくう じろう",
+  "gender": "other",
+  "birth_date": "1996-07-21",
+  "address": "福岡県架空市見本1-1 ダミーマンション301",
+  "education_level": "bachelor",
+  "school_name": "見本大学",
+  "graduated_on": "2019-03",
+  "expected_salary": 450,
+  "desired_location": "福岡県",
+  "skills": ["Python", "SQL", "統計検定2級"],
+  "languages": [],
+  "work_histories": [
+    {"company": "株式会社サンプル解析", "started_on": "2020-10", "ended_on": null}
+  ]
+}
