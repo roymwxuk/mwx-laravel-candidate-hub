@@ -23,7 +23,7 @@ class ReasoningEffortTest extends TestCase
             ->assertOk();
     }
 
-    public function test_the_effort_reported_by_the_extractor_is_shown_after_its_name(): void
+    public function test_the_effort_is_shown_as_a_code_after_the_extractor_name(): void
     {
         config(['services.extractor.url' => 'http://extractor.test']);
         Storage::fake('local');
@@ -39,14 +39,26 @@ class ReasoningEffortTest extends TestCase
 
         ExtractResumeJob::dispatchSync($document);
 
-        $this->show($document->fresh())->assertSeeTextInOrder(['抽出エンジン:', 'azure-openai:gpt-6-luna', '推論レベル:', 'low']);
+        $this->show($document->fresh())
+            ->assertSeeInOrder(['抽出エンジン:', 'azure-openai:gpt-6-luna', '<code>X1</code>'], false)
+            ->assertDontSee('<code>low</code>', false)
+            ->assertDontSee('reasoning');
+    }
+
+    public function test_each_effort_has_its_own_code(): void
+    {
+        foreach (['low' => 'X1', 'medium' => 'X2', 'high' => 'X3'] as $effort => $code) {
+            $document = ResumeDocument::factory()->extracted()->create(['raw_response' => ['reasoning_effort' => $effort]]);
+
+            $this->assertSame($code, $document->reasoningCode());
+        }
     }
 
     public function test_nothing_is_shown_when_the_extractor_reported_no_effort(): void
     {
         $document = ResumeDocument::factory()->extracted()->create();
 
-        $this->show($document)->assertSee('抽出エンジン')->assertDontSee('推論レベル');
+        $this->show($document)->assertSee('抽出エンジン')->assertDontSee('<code>X', false);
     }
 
     public function test_an_unknown_value_is_not_shown(): void
@@ -54,7 +66,7 @@ class ReasoningEffortTest extends TestCase
         foreach ([['x'], 'とても高い', null] as $effort) {
             $document = ResumeDocument::factory()->extracted()->create(['raw_response' => ['reasoning_effort' => $effort]]);
 
-            $this->assertNull($document->reasoningEffort());
+            $this->assertNull($document->reasoningCode());
         }
     }
 }

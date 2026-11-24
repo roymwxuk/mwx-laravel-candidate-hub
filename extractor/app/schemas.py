@@ -61,7 +61,7 @@ class ResumeFields(BaseModel):
 class ExtractionResponse(BaseModel):
     schema_version: Literal["1"] = SCHEMA_VERSION
     extractor: str
-    # Null for backends that do not reason (mock). Shown next to the extractor name on the review page.
+    # Null for backends that do not reason (mock). The review page shows it as a code (X1, X2, X3).
     reasoning_effort: str | None = None
     fields: ResumeFields
     warnings: list[str] = Field(default_factory=list)
