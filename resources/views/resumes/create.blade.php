@@ -11,7 +11,7 @@
         </p>
     @endif
 
-    <form method="POST" action="{{ route('resumes.store') }}" enctype="multipart/form-data" class="max-w-lg space-y-4 rounded-lg border border-slate-200 bg-white p-6">
+    <form method="POST" action="{{ route('resumes.store') }}" enctype="multipart/form-data" data-loading class="max-w-lg space-y-4 rounded-lg border border-slate-200 bg-white p-6">
         @csrf
         <div>
             <label for="resume" class="block text-sm font-medium">履歴書ファイル（PDF・5MBまで）</label>
@@ -19,6 +19,7 @@
                    class="mt-2 block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm hover:file:bg-slate-200">
             <x-field-error name="resume" />
         </div>
-        <button class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">アップロードして解析</button>
+        <button autocomplete="off" data-loading-text="解析中…" class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60">アップロードして解析</button>
+        <x-upload-progress />
     </form>
 </x-layout>

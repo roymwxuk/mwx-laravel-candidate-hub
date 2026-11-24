@@ -30,7 +30,7 @@
         @case(\App\Enums\ResumeStatus::Processing)
             <div class="rounded-lg border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900"
                  data-poll-url="{{ route('resumes.status', $document) }}" data-poll-status="{{ $document->status->value }}">
-                <p class="font-medium">AIが履歴書を解析しています…</p>
+                <p class="flex items-center gap-2 font-medium"><x-spinner />AIが履歴書を解析しています…</p>
                 <p class="mt-1">通常10〜60秒ほどで完了し、自動で画面が更新されます。</p>
             </div>
             @break
@@ -40,9 +40,10 @@
                 <p class="font-medium">解析に失敗しました</p>
                 <p class="mt-1">{{ $document->error_message }}</p>
                 @can('retry', $document)
-                    <form method="POST" action="{{ route('resumes.retry', $document) }}" class="mt-4">
+                    <form method="POST" action="{{ route('resumes.retry', $document) }}" data-loading class="mt-4 space-y-3">
                         @csrf
-                        <button class="rounded-md bg-rose-700 px-3 py-1.5 text-white hover:bg-rose-600">再解析する</button>
+                        <button autocomplete="off" data-loading-text="解析中…" class="rounded-md bg-rose-700 px-3 py-1.5 text-white hover:bg-rose-600 disabled:opacity-60">再解析する</button>
+                        <x-upload-progress />
                     </form>
                 @endcan
             </div>
