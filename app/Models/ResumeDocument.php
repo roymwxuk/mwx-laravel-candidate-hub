@@ -97,6 +97,17 @@ class ResumeDocument extends Model
     }
 
     /**
+     * The LLM reasoning effort this draft was extracted with. Null for the mock
+     * extractor and for drafts made before the extractor reported it.
+     */
+    public function reasoningEffort(): ?string
+    {
+        $effort = $this->raw_response['reasoning_effort'] ?? null;
+
+        return in_array($effort, ['none', 'low', 'medium', 'high', 'xhigh', 'max'], true) ? $effort : null;
+    }
+
+    /**
      * @param  Builder<ResumeDocument>  $query
      */
     public function scopeUploadedByStaff(Builder $query): void

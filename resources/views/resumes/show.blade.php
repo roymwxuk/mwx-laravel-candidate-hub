@@ -10,6 +10,7 @@
             <p class="text-xs text-slate-500">
                 {{ $document->uploader?->name }} が {{ $document->created_at->display() }} にアップロード
                 @if ($document->extractor) ・ 抽出エンジン: <code>{{ $document->extractor }}</code> @endif
+                @if ($document->reasoningEffort()) ・ 推論レベル: <code>{{ $document->reasoningEffort() }}</code> @endif
             </p>
         </div>
         <div class="flex items-center gap-3">
