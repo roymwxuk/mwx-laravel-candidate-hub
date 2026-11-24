@@ -19,6 +19,34 @@ if (poller) {
     }, 3000);
 }
 
+// Slow submissions (<form data-loading>): show progress and allow only one submit,
+// since every extra click would start another paid extraction.
+document.querySelectorAll('form[data-loading]').forEach((form) => {
+    const button = form.querySelector('[data-loading-text]');
+    const panel = form.querySelector('[data-loading-panel]');
+    const label = button.textContent;
+
+    const setLoading = (loading) => {
+        button.disabled = loading;
+        button.textContent = loading ? button.dataset.loadingText : label;
+        panel.hidden = !loading;
+        form.setAttribute('aria-busy', String(loading));
+    };
+
+    form.addEventListener('submit', (event) => {
+        if (button.disabled) {
+            event.preventDefault();
+            return;
+        }
+        setLoading(true);
+    });
+
+    // Coming back with the browser's Back button can restore the frozen loading state.
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) setLoading(false);
+    });
+});
+
 // "＋ 職歴を追加": clone the last (blank) row with a fresh index.
 const addHistory = document.querySelector('[data-add-history]');
 

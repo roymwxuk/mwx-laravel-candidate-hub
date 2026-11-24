@@ -22,7 +22,7 @@
 
             @if ($document === null)
                 <p class="mt-1 text-sm text-slate-600">履歴書（PDF）をアップロードすると、AIが内容を読み取って下のフォームに入力します。送信前にご自身で確認・修正できます。</p>
-                <form method="POST" action="{{ route('jobs.apply.resume', $position) }}" enctype="multipart/form-data" class="mt-4 space-y-3">
+                <form method="POST" action="{{ route('jobs.apply.resume', $position) }}" enctype="multipart/form-data" data-loading class="mt-4 space-y-3">
                     @csrf
                     <div>
                         <label for="resume" class="sr-only">履歴書ファイル（PDF、5MBまで）</label>
@@ -31,12 +31,13 @@
                         <x-field-error name="resume" />
                     </div>
                     <x-privacy-consent id="consent-upload" />
-                    <button class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50">アップロードして自動入力</button>
+                    <button autocomplete="off" data-loading-text="読み取り中…" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 disabled:opacity-60">アップロードして自動入力</button>
+                    <x-upload-progress />
                 </form>
             @elseif ($reading)
                 <div class="mt-3 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
                      data-poll-url="{{ route('jobs.apply.status', $position) }}" data-poll-status="{{ $status->value }}">
-                    <p class="font-medium">「{{ $document->original_name }}」を読み取っています…</p>
+                    <p class="flex items-center gap-2 font-medium"><x-spinner />「{{ $document->original_name }}」を読み取っています…</p>
                     <p class="mt-1">数秒〜数十秒で完了し、自動でフォームに入力されます。</p>
                 </div>
             @elseif ($status === ResumeStatus::Extracted)
