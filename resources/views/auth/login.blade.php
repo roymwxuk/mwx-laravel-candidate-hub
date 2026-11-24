@@ -34,5 +34,7 @@
                 </ul>
             </div>
         @endif
+
+        <p class="mt-6 text-center text-xs text-slate-500">作者：roymwxuk</p>
     </div>
 </x-layout>
