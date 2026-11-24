@@ -1,0 +1,18 @@
+{
+  "name": "見本 さくら",
+  "name_kana": null,
+  "gender": null,
+  "birth_date": null,
+  "phone": null,
+  "address": null,
+  "expected_salary": null,
+  "education_level": "vocational",
+  "school_name": "架空専門学校",
+  "graduated_on": "2017-03",
+  "skills": ["Figma", "HTML", "CSS", "JavaScript"],
+  "languages": ["英語", "HSK"],
+  "work_histories": [
+    {"company": "株式会社サンプルデザイン", "started_on": "2017-04", "ended_on": "2021-12"},
+    {"company": "株式会社ダミースタジオ", "started_on": "2022-01", "ended_on": null}
+  ]
+}

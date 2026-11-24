@@ -1,0 +1,22 @@
+{
+  "_source": "../../tests/fixtures/career_sheet.pdf",
+  "name": "山田 花子",
+  "name_kana": "サンプル ハナコ",
+  "email": "hanako.yamada@example.com",
+  "phone": "090-0000-0000",
+  "address": "東京都サンプル区見本町2-4-8 サンプルハイツ205",
+  "birth_date": "1992-03-14",
+  "gender": "female",
+  "education_level": "bachelor",
+  "school_name": "見本工科大学",
+  "graduated_on": "2014-03",
+  "expected_salary": null,
+  "desired_location": null,
+  "skills": ["基本情報技術者"],
+  "languages": ["780"],
+  "work_histories": [
+    {"company": "株式会社サンプルリンク", "started_on": "2022-07", "ended_on": "2026-09"},
+    {"company": "株式会社見本クラウド", "started_on": "2018-04", "ended_on": "2022-06"},
+    {"company": "株式会社テスト工房", "started_on": "2014-04", "ended_on": "2018-03"}
+  ]
+}

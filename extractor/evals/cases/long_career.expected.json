@@ -1,0 +1,20 @@
+{
+  "name": "架空 三郎",
+  "name_kana": "かくう さぶろう",
+  "gender": "male",
+  "birth_date": null,
+  "education_level": "associate",
+  "school_name": "架空工業高等専門学校",
+  "graduated_on": "2004-03",
+  "expected_salary": null,
+  "skills": ["Java", "Oracle", "PHP", "MySQL", "TypeScript", "AWS", "Terraform"],
+  "work_histories": [
+    {"company": "株式会社ダミー第一", "started_on": "2004-04", "ended_on": "2007-03"},
+    {"company": "株式会社ダミー第二", "started_on": "2007-04", "ended_on": "2010-06"},
+    {"company": "株式会社ダミー第三", "started_on": "2010-07", "ended_on": "2013-12"},
+    {"company": "株式会社ダミー第四", "started_on": "2014-01", "ended_on": "2016-09"},
+    {"company": "株式会社ダミー第五", "started_on": "2016-10", "ended_on": "2019-03"},
+    {"company": "株式会社ダミー第六", "started_on": "2019-04", "ended_on": "2022-08"},
+    {"company": "株式会社ダミー第七", "started_on": "2022-09", "ended_on": null}
+  ]
+}
