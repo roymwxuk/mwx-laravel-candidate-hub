@@ -10,6 +10,7 @@ x-app-env: &app-env
   DB_JOURNAL_MODE: wal
   QUEUE_CONNECTION: database
   EXTRACTOR_URL: http://extractor:8001
+  EXTRACTOR_ALIASES: ${EXTRACTOR_ALIASES:-}
   EXTRACTOR_TOKEN: ${EXTRACTOR_TOKEN:-local-dev-token}
 
 services:

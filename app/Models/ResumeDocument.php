@@ -97,6 +97,27 @@ class ResumeDocument extends Model
     }
 
     /**
+     * What to call the extractor on screen. Model names are not shown: an LLM
+     * appears under its alias, or as "AI" when it has none.
+     */
+    public function extractorLabel(): ?string
+    {
+        if ($this->extractor === null || str_starts_with($this->extractor, 'mock-')) {
+            return $this->extractor;
+        }
+
+        foreach (explode(',', (string) config('services.extractor.aliases')) as $pair) {
+            [$name, $alias] = array_map('trim', explode('=', $pair, 2)) + [1 => ''];
+
+            if ($name === $this->extractor && $alias !== '') {
+                return $alias;
+            }
+        }
+
+        return 'AI';
+    }
+
+    /**
      * Display code for the LLM reasoning effort this draft was extracted with;
      * the page does not name the effort itself. Null for the mock extractor and
      * for drafts made before the extractor reported it.

@@ -34,6 +34,9 @@ return [
         'token' => env('EXTRACTOR_TOKEN'),
         // Tell users on the upload page that extraction is rule-based, not AI.
         'mock_notice' => (bool) env('EXTRACTOR_MOCK_NOTICE', false),
+        // Names shown instead of the model's: "extractor=Name,extractor=Name".
+        // Set it per environment; the real mapping stays out of the repository.
+        'aliases' => (string) env('EXTRACTOR_ALIASES', ''),
     ],
 
     'slack' => [

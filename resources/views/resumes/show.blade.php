@@ -9,7 +9,7 @@
             <h1 class="mt-1 text-xl font-semibold text-slate-900">{{ $document->original_name }}</h1>
             <p class="text-xs text-slate-500">
                 {{ $document->uploader?->name }} が {{ $document->created_at->display() }} にアップロード
-                @if ($document->extractor) ・ 抽出エンジン: <code>{{ $document->extractor }}</code> @endif
+                @if ($document->extractor) ・ 抽出エンジン: <code>{{ $document->extractorLabel() }}</code> @endif
                 @if ($document->reasoningCode()) ・ <code>{{ $document->reasoningCode() }}</code> @endif
             </p>
         </div>

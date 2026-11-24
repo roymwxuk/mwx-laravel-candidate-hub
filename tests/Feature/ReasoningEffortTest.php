@@ -25,12 +25,12 @@ class ReasoningEffortTest extends TestCase
 
     public function test_the_effort_is_shown_as_a_code_after_the_extractor_name(): void
     {
-        config(['services.extractor.url' => 'http://extractor.test']);
+        config(['services.extractor.url' => 'http://extractor.test', 'services.extractor.aliases' => 'azure-openai:test-model=Cedar']);
         Storage::fake('local');
         Storage::disk('local')->put('resumes/sample.pdf', '%PDF-1.4 fake');
         Http::fake(['extractor.test/*' => Http::response([
             'schema_version' => '1',
-            'extractor' => 'azure-openai:gpt-6-luna',
+            'extractor' => 'azure-openai:test-model',
             'reasoning_effort' => 'low',
             'warnings' => [],
             'fields' => ['name' => '架空 太郎'],
@@ -40,7 +40,9 @@ class ReasoningEffortTest extends TestCase
         ExtractResumeJob::dispatchSync($document);
 
         $this->show($document->fresh())
-            ->assertSeeInOrder(['抽出エンジン:', 'azure-openai:gpt-6-luna', '<code>X1</code>'], false)
+            ->assertSeeInOrder(['抽出エンジン:', '<code>Cedar</code>', '<code>X1</code>'], false)
+            ->assertDontSee('azure-openai')
+            ->assertDontSee('test-model')
             ->assertDontSee('<code>low</code>', false)
             ->assertDontSee('reasoning');
     }
