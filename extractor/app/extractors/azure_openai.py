@@ -124,6 +124,7 @@ class AzureOpenAIExtractor:
 
         return ExtractionResponse(
             extractor=self.name,
+            reasoning_effort=REASONING_EFFORT,
             fields=fields,
             warnings=warnings + [w for w in model_warnings if isinstance(w, str)],
         )

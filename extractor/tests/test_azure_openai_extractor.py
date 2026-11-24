@@ -51,6 +51,7 @@ def test_parses_structured_output_into_the_contract():
     result = extractor.extract("履歴書テキスト")
 
     assert result.extractor == "azure-openai:test-deployment"
+    assert result.reasoning_effort == "low"
     assert result.fields.name == "架空 太郎"
     assert result.fields.work_histories[0].company == "A社"
     assert result.warnings == ["ふりがなが記載されていません"]
