@@ -23,6 +23,8 @@ from app.schemas import ExtractionResponse, ResumeFields
 
 DEFAULT_DEPLOYMENT = "gpt-6-luna"
 MAX_OUTPUT_TOKENS = 4096
+# The model's own default is medium, which is slower. Compare settings with evals/reasoning.py.
+REASONING_EFFORT = "low"
 
 
 def strict_schema(schema: dict[str, Any]) -> dict[str, Any]:
@@ -89,6 +91,7 @@ class AzureOpenAIExtractor:
             instructions=SYSTEM_PROMPT,
             input=f"<resume>\n{text}\n</resume>",
             max_output_tokens=MAX_OUTPUT_TOKENS,
+            reasoning={"effort": REASONING_EFFORT},
             text={
                 "format": {
                     "type": "json_schema",

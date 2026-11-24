@@ -63,10 +63,10 @@ def test_work_histories_match_by_company_in_any_order():
 def test_sends_the_effort_on_the_production_request_and_records_usage():
     c = client(payload={"name": "架空 太郎"})
 
-    run = run_once(c, "luna", Case("x", "text", {"name": "架空 太郎"}), "low", 1)
+    run = run_once(c, "luna", Case("x", "text", {"name": "架空 太郎"}), "high", 1)
 
     call = c.responses.calls[0]
-    assert call["reasoning"] == {"effort": "low"}
+    assert call["reasoning"] == {"effort": "high"}  # overrides the production setting
     assert call["text"]["format"]["strict"] is True
     assert (run.output_tokens, run.reasoning_tokens, run.passed, run.total) == (300, 200, 1, 1)
     assert run.seconds is not None and run.error is None

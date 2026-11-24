@@ -11,7 +11,8 @@ python -m evals.reasoning --efforts low,medium --runs 5    # 62 calls: the compa
 python -m evals.reasoning --efforts none,low,medium        # 93 calls: also try no reasoning
 ```
 
-`medium` is the model's documented default, so it stands in for today's behaviour.
+Production uses `low` (`REASONING_EFFORT` in `app/extractors/azure_openai.py`). `medium` is the model's
+documented default, so it stands in for the behaviour before that was set. `--efforts` overrides both.
 
 ## Reading the result
 

@@ -56,6 +56,7 @@ def test_parses_structured_output_into_the_contract():
     assert result.warnings == ["ふりがなが記載されていません"]
     call = responses.calls[0]
     assert call["model"] == "test-deployment"
+    assert call["reasoning"] == {"effort": "low"}
     assert call["text"]["format"]["type"] == "json_schema"
     assert call["text"]["format"]["strict"] is True
 

@@ -5,7 +5,7 @@
     python -m evals.reasoning --efforts low,medium --runs 5
 
 Runs the real extractor (same prompt, schema and validation as production); only
-`reasoning.effort` is added to the request. Makes billed API calls.
+`reasoning.effort` is overridden. Makes billed API calls.
 
 Efforts alternate in random order within each round, so a slow minute on Azure
 hits all of them rather than whichever one happened to be running. SDK retries
