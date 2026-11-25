@@ -1,6 +1,6 @@
 # Candidate Hub
 
-**Live demo:** <https://candidate-hub.demo.roymwxuk.uk/> ([demo accounts](#demo-accounts-password-is-password-for-all))
+**Live demo:** <https://candidate-hub.demo.roymwxuk.uk/> ([demo account](#demo-account-password-is-password))
 
 ![Demo: uploading a resume PDF and reviewing the AI draft](docs/demo.gif)
 
@@ -160,13 +160,16 @@ uvicorn app.main:app --port 8001
 
 Use the Foundry **resource** URL as the endpoint, not the **project** URL (there is a known issue where gpt-6-luna returns 500 through the project endpoint).
 
-### Demo accounts (password is `password` for all)
+### Demo account (password is `password`)
 
 | Email | Role |
 | --- | --- |
-| admin@example.com | Admin |
 | hr@example.com | HR |
+
+<!-- Not tested yet: move these rows back into the table to show them again (also in resources/views/auth/login.blade.php)
+| admin@example.com | Admin |
 | interviewer@example.com | Interviewer (assigned to 2 candidates) |
+-->
 
 Samples (fictional people): `extractor/tests/fixtures/sample_resume.pdf` (履歴書) and `extractor/tests/fixtures/career_sheet.pdf` (a filled-in キャリアシート)
 

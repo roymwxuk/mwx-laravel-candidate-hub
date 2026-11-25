@@ -1,6 +1,6 @@
 # Candidate Hub
 
-**デモ：** <https://candidate-hub.demo.roymwxuk.uk/>（[デモアカウント](#デモアカウントパスワードはすべて-password)）
+**デモ：** <https://candidate-hub.demo.roymwxuk.uk/>（[デモアカウント](#デモアカウントパスワード-password)）
 
 ![履歴書PDFをアップロードし、AIの下書きを確認するデモ](docs/demo.gif)
 
@@ -158,13 +158,16 @@ uvicorn app.main:app --port 8001
 
 エンドポイントはFoundryの**プロジェクト**ではなく**リソース**のURLを指定してください（プロジェクト経由ではgpt-6-lunaが500を返す既知の問題があります）。
 
-### デモアカウント（パスワードはすべて `password`）
+### デモアカウント（パスワード: `password`）
 
 | メール | 権限 |
 | --- | --- |
-| admin@example.com | 管理者 |
 | hr@example.com | 人事担当 |
+
+<!-- Not tested yet: move these rows back into the table to show them again (also in resources/views/auth/login.blade.php)
+| admin@example.com | 管理者 |
 | interviewer@example.com | 面接官（2名の候補者にアサイン済み） |
+-->
 
 サンプル（架空の人物）：`extractor/tests/fixtures/sample_resume.pdf`（履歴書）、`extractor/tests/fixtures/career_sheet.pdf`（記入済みキャリアシート）
 
