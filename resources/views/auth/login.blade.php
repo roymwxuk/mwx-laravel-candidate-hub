@@ -28,9 +28,10 @@
             <div class="mt-6 rounded-md border border-dashed border-slate-300 p-4 text-xs text-slate-500">
                 <p class="mb-1 font-medium">デモアカウント（パスワード: password）</p>
                 <ul class="space-y-0.5">
-                    <li>admin@example.com — 管理者</li>
+                    {{-- Not tested yet: uncomment to show again (also in README.md and README-en.md) --}}
+                    {{-- <li>admin@example.com — 管理者</li> --}}
                     <li>hr@example.com — 人事担当</li>
-                    <li>interviewer@example.com — 面接官</li>
+                    {{-- <li>interviewer@example.com — 面接官</li> --}}
                 </ul>
             </div>
         @endif
